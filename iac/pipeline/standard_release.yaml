@@ -1,0 +1,4 @@
+stages:
+- template: ../stages/qa.yaml
+
+
