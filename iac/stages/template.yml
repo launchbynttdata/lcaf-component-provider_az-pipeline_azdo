@@ -8,9 +8,9 @@ parameters:
   default: []
 
 stages:
-- template: ./steps/launch_init_remote_state.yml
+- template: ../steps/launch_init_remote_state.yml
 
-- template: ./steps/launch_terraform_plan.yml
+- template: ../steps/launch_terraform_plan.yml
 
 
 # - ${{ each env in parameters.environments }}:
