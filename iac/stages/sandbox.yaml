@@ -1,6 +1,3 @@
-variables:
-  subscriptionId: $(sandboxSubscriptionId)
-
 stages:
 - stage: Sandbox
   displayName: Sandbox stage
