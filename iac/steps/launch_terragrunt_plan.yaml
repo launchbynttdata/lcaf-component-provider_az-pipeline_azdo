@@ -36,7 +36,7 @@ stages:
         workingDirectory: $(System.DefaultWorkingDirectory)
         inlineScript: |
           echo "Hello World"
-          # launch pipeline terragrunt apply \
+          # launch pipeline terragrunt plan \
           #   --repository-url  ${{ parameters.repositoryUrl }}\
           #   --git-token ${{ parameters.gitToken }}\
           #   --commit-sha ${{ parameters.commitSha }}\
