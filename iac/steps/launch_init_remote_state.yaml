@@ -29,7 +29,7 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: AzureClI@2
-      displayName: Run Launch Pipeline Terragrunt Plan
+      displayName: Run Launch Azure Init Remote State
       inputs:
         scriptType: bash
         scriptLocation: inlineScript
