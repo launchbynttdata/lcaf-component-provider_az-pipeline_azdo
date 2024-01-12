@@ -41,5 +41,5 @@ stages:
           #   --git-token ${{ parameters.gitToken }}\
           #   --commit-sha ${{ parameters.commitSha }}\
           #   --target-environment ${{ parameters.targetEnvironment }}
-        azureSubscription: ${{ parameters.armServiceConnection }}
-        addSpnToEnvironment: true
+        # azureSubscription: ${{ parameters.armServiceConnection }}
+        # addSpnToEnvironment: true
