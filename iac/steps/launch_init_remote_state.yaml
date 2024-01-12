@@ -35,10 +35,11 @@ stages:
         scriptLocation: inlineScript
         workingDirectory: $(System.DefaultWorkingDirectory)
         inlineScript: |
-          launch pipeline terragrunt apply \
-            --repository-url  ${{ parameters.repositoryUrl }}\
-            --git-token ${{ parameters.gitToken }}\
-            --commit-sha ${{ parameters.commitSha }}\
-            --target-environment ${{ parameters.targetEnvironment }}
+          echo "Hello World"
+          # launch pipeline terragrunt apply \
+          #   --repository-url  ${{ parameters.repositoryUrl }}\
+          #   --git-token ${{ parameters.gitToken }}\
+          #   --commit-sha ${{ parameters.commitSha }}\
+          #   --target-environment ${{ parameters.targetEnvironment }}
         azureSubscription: ${{ parameters.armServiceConnection }}
         addSpnToEnvironment: true

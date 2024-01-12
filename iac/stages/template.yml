@@ -9,30 +9,4 @@ parameters:
 
 stages:
 - template: ../steps/launch_init_remote_state.yaml
-
-- template: ../steps/launch_terraform_plan.yaml
-
-
-# - ${{ each env in parameters.environments }}:
-#   - template: ./terragrunt/stages/approval.yml
-#     parameters: 
-#       approval: ${{ env.approval }}
-
-#   - ${{ if ne(env.infraValidation.jobData.configjsonschemapath, '') }}:
-#     - template: ./pipeline/stages/infra_jsonvalidation.yml
-#       parameters:
-#         common: ${{ parameters.common }}
-#         infraValidation: ${{ env.infraValidation }}      
-
-#   - template: ./terragrunt/stages/remote_backend.yml
-#     parameters: 
-#       armServiceConnection: ${{ env.armServiceConnection }}
-#       azureSubscriptionId: ${{ env.azureSubscriptionId }}
-#       remoteBackend: ${{ env.remoteBackend }}
-
-#   - template: ./terragrunt/stages/${{ parameters.common.tgAppTemplateName}}.yml
-#     parameters: 
-#       armServiceConnection: ${{ env.armServiceConnection }}
-#       azureSubscriptionId: ${{ env.azureSubscriptionId }}
-#       appInfra: ${{ env.app_infra }}
-        
+# - template: ../steps/launch_terraform_plan.yaml
