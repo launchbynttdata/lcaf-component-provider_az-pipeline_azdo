@@ -8,5 +8,5 @@ parameters:
   default: []
 
 stages:
-- template: ../steps/launch_init_remote_state.yaml
-# - template: ../steps/launch_terraform_plan.yaml
+# - template: ../steps/launch_init_remote_state.yaml
+- template: ../steps/launch_terraform_plan.yaml

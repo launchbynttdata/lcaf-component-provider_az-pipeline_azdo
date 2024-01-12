@@ -1,36 +1,45 @@
-parameters:
-- name: armServiceConnection
-  type: string
-  default: false
+# parameters:
+# - name: armServiceConnection
+#   type: string
+#   default: false
 
-- name: repositoryUrl
-  type: string
-  default: false
+# - name: repositoryUrl
+#   type: string
+#   default: false
 
-- name: gitToken
-  type: string
-  default: false
+# - name: gitToken
+#   type: string
+#   default: false
 
-- name: commitSha
-  type: string
-  default: false
+# - name: commitSha
+#   type: string
+#   default: false
 
-- name: targetEnvironment
-  type: string
-  default: false
+# - name: targetEnvironment
+#   type: string
+#   default: false
 
-steps:            
-- task: AzureClI@2
-  displayName: Run Launch Pipeline Terragrunt Plan
-  inputs:
-    scriptType: bash
-    scriptLocation: inlineScript
-    workingDirectory: $(System.DefaultWorkingDirectory)
-    inlineScript: |
-      launch pipeline terragrunt plan \
-        --repository-url  ${{ parameters.repositoryUrl }}\
-        --git-token ${{ parameters.gitToken }}\
-        --commit-sha ${{ parameters.commitSha }}\
-        --target-environment ${{ parameters.targetEnvironment }}
-    azureSubscription: ${{ parameters.armServiceConnection }}
-    addSpnToEnvironment: true
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:  
+  - job: Build
+    displayName: Build job
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureClI@2
+      displayName: Run Launch Pipeline Terragrunt Plan
+      inputs:
+        scriptType: bash
+        scriptLocation: inlineScript
+        workingDirectory: $(System.DefaultWorkingDirectory)
+        inlineScript: |
+          echo "Hello World"
+          # launch pipeline terragrunt apply \
+          #   --repository-url  ${{ parameters.repositoryUrl }}\
+          #   --git-token ${{ parameters.gitToken }}\
+          #   --commit-sha ${{ parameters.commitSha }}\
+          #   --target-environment ${{ parameters.targetEnvironment }}
+        azureSubscription: ${{ parameters.armServiceConnection }}
+        addSpnToEnvironment: true
