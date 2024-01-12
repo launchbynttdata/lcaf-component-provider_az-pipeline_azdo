@@ -19,18 +19,26 @@ parameters:
   type: string
   default: false
 
-steps:            
-- task: AzureClI@2
-  displayName: Run Launch Pipeline Terragrunt Plan
-  inputs:
-    scriptType: bash
-    scriptLocation: inlineScript
-    workingDirectory: $(System.DefaultWorkingDirectory)
-    inlineScript: |
-      launch pipeline terragrunt apply \
-        --repository-url  ${{ parameters.repositoryUrl }}\
-        --git-token ${{ parameters.gitToken }}\
-        --commit-sha ${{ parameters.commitSha }}\
-        --target-environment ${{ parameters.targetEnvironment }}
-    azureSubscription: ${{ parameters.armServiceConnection }}
-    addSpnToEnvironment: true
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:  
+  - job: Build
+    displayName: Build job
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureClI@2
+      displayName: Run Launch Pipeline Terragrunt Plan
+      inputs:
+        scriptType: bash
+        scriptLocation: inlineScript
+        workingDirectory: $(System.DefaultWorkingDirectory)
+        inlineScript: |
+          launch pipeline terragrunt apply \
+            --repository-url  ${{ parameters.repositoryUrl }}\
+            --git-token ${{ parameters.gitToken }}\
+            --commit-sha ${{ parameters.commitSha }}\
+            --target-environment ${{ parameters.targetEnvironment }}
+        azureSubscription: ${{ parameters.armServiceConnection }}
+        addSpnToEnvironment: true
