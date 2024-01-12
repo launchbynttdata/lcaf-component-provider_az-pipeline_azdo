@@ -1,9 +1,12 @@
+variables:
+  subscriptionId: $(sandboxSubscriptionId)
+
 stages:
-- stage: QA
-  displayName: QA stage
+- stage: Sandbox
+  displayName: Sandbox stage
   jobs:  
-  - job: QA
-    displayName: QA job
+  - job: Sandbox
+    displayName: Sandbox job
     pool:
       vmImage: $(vmImageName)
     steps:

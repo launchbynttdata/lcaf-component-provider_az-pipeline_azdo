@@ -12,3 +12,4 @@ steps:
       #   --git-token ${{ parameters.gitToken }}\
       #   --commit-sha ${{ parameters.commitSha }}\
       #   --target-environment ${{ parameters.targetEnvironment }}
+    azureSubscription: $(subscriptionId)
