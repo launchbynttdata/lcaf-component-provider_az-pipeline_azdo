@@ -1,4 +1,2 @@
 stages:
 - template: ../stages/sandbox.yaml
-
-

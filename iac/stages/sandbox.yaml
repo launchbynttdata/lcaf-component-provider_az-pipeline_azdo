@@ -1,12 +1,11 @@
-stages:
-- stage: Sandbox
-  displayName: Sandbox stage
-  jobs:  
-  - job: Sandbox
-    displayName: Sandbox job
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - template: ../steps/launch_init_remote_state.yaml
-    - template: ../steps/launch_terragrunt_plan.yaml
-    - template: ../steps/launch_terragrunt_apply.yaml
+paramters:
+  - name: vmImageNameMSFTHosted
+    type: string
+
+jobs:  
+- job: Sandbox
+  displayName: Sandbox job
+  pool:
+    vmImage: $(vmImageNameMSFTHosted)
+  steps:
+  - template: ../steps/launch_terragrunt_apply.yaml
