@@ -14,3 +14,4 @@ steps:
       #   --target-environment ${{ parameters.targetEnvironment }}
     azureSubscription: $(sandboxSubscriptionId)
     addSpnToEnvironment: true
+  

@@ -4,7 +4,7 @@ paramters:
 
 jobs:  
 - job: Sandbox
-  displayName: Sandbox job
+  displayName: Sandbox
   pool:
     vmImage: ${{ parameters.vmImageNameMSFTHosted }}
   steps:
