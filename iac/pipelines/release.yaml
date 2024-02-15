@@ -1,2 +1,9 @@
+paramters:
+  - name: vmImageNameMSFTHosted
+    type: string
+
+
 stages:
 - template: ../stages/sandbox.yaml
+  parameters:
+    vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}

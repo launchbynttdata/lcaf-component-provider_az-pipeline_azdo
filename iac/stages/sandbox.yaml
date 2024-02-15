@@ -6,6 +6,6 @@ jobs:
 - job: Sandbox
   displayName: Sandbox job
   pool:
-    vmImage: $(vmImageNameMSFTHosted)
+    vmImage: ${{ parameters.vmImageNameMSFTHosted }}
   steps:
   - template: ../steps/launch_terragrunt_apply.yaml
