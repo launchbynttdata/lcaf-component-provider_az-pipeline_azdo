@@ -14,7 +14,13 @@ parameters:
     type: string
     default: ''
 
+strategy:
+  matrix:
+    Python311:
+      python.version: '3.11'
+
 steps:
+  - template: ../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
     displayName: Run Launch Pipeline Terragrunt Plan
     inputs:
@@ -22,8 +28,7 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        set -ex
-        python3 -m pip install launch-cli
+        launch --version
         echo "dryrun: launch pipeline terragrunt plan"
         # launch pipeline terragrunt plan \
         #   --repository-url  ${{ parameters.repositoryUrl }}\
