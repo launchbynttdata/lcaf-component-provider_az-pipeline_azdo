@@ -1,11 +1,11 @@
 parameters:
-  - name: vmImageNameMSFTHosted
-    type: string
-
-pool:
-  vmImage: ${{ parameters.vmImageNameMSFTHosted }}
+- name: vmImageNameMSFTHosted
+  type: string
 
 jobs:
 - job: Sandbox
+  displayName: Sandbox
+  pool:
+    vmImage: ${{ parameters.vmImageNameMSFTHosted }}
   steps:
   - template: ../steps/launch_terragrunt_apply.yaml
