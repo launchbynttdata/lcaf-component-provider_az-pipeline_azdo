@@ -1,15 +1,16 @@
 parameters:
   - name: repositoryUrl
     type: string
-  
+    default: ''
   - name: gitToken
     type: string
-
+    default: ''
   - name: commitSha
     type: string
-
+    default: ''
   - name: targetEnvironment
     type: string
+    default: ''
 
 steps:
   - task: AzureClI@2
