@@ -1,16 +1,16 @@
 steps:
-- task: AzureClI@2
-  displayName: Run Launch Pipeline Terragrunt Plan
-  inputs:
-    scriptType: bash
-    scriptLocation: inlineScript
-    workingDirectory: $(System.DefaultWorkingDirectory)
-    inlineScript: |
-      echo "dryrun: launch pipeline terragrunt plan"
-      # launch pipeline terragrunt plan \
-      #   --repository-url  ${{ parameters.repositoryUrl }}\
-      #   --git-token ${{ parameters.gitToken }}\
-      #   --commit-sha ${{ parameters.commitSha }}\
-      #   --target-environment ${{ parameters.targetEnvironment }}
-    azureSubscription: $(sandboxSubscriptionId)
-    addSpnToEnvironment: true
+  - task: AzureClI@2
+    displayName: Run Launch Pipeline Terragrunt Plan
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        echo "dryrun: launch pipeline terragrunt plan"
+        # launch pipeline terragrunt plan \
+        #   --repository-url  ${{ parameters.repositoryUrl }}\
+        #   --git-token ${{ parameters.gitToken }}\
+        #   --commit-sha ${{ parameters.commitSha }}\
+        #   --target-environment ${{ parameters.targetEnvironment }}
+      azureSubscription: $(sandboxSubscriptionId)
+      addSpnToEnvironment: true

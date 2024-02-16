@@ -1,13 +1,10 @@
 parameters:
-- name: vmImageNameMSFTHosted
-  type: string
-  default: 'ubuntu-latest'
+  - name: vmImageNameMSFTHosted
+    type: string
 
-pool:
-  vmImage: ${{ parameters.vmImageNameMSFTHosted }}
-
-jobs:
-- job: Sandbox
-  displayName: Sandbox
-  steps:
-  - template: ../steps/launch_terragrunt_apply.yaml
+stages:
+  - stage: Sandbox
+    jobs:
+      - template: ../jobs/deploy.yaml
+        parameters:
+          vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
