@@ -22,7 +22,8 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        pip3 install launch-cli
+        set -ex
+        python3 -m pip install launch-cli
         echo "dryrun: launch pipeline terragrunt plan"
         # launch pipeline terragrunt plan \
         #   --repository-url  ${{ parameters.repositoryUrl }}\
