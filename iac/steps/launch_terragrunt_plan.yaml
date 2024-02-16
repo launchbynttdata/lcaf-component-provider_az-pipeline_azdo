@@ -1,4 +1,6 @@
 parameters:
+  - name: subscriptionId
+    type: string
   - name: repositoryUrl
     type: string
     default: ''
@@ -26,5 +28,5 @@ steps:
         #   --git-token ${{ parameters.gitToken }}\
         #   --commit-sha ${{ parameters.commitSha }}\
         #   --target-environment ${{ parameters.targetEnvironment }}
-      # azureSubscription: $(sandboxSubscriptionId)
-      # addSpnToEnvironment: true
+      azureSubscription: ${{ parameters.subscriptionId }}
+      addSpnToEnvironment: true

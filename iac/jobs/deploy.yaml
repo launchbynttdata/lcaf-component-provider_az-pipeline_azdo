@@ -1,6 +1,8 @@
 parameters:
   - name: vmImageNameMSFTHosted
     type: string
+  - name: subscriptionId
+    type: string
 
 jobs:
   - job: Deploy
@@ -9,3 +11,5 @@ jobs:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
       - template: ../steps/launch_terragrunt_apply.yaml
+        parameters:
+          subscriptionId: ${{ parameters.subscriptionId }}
