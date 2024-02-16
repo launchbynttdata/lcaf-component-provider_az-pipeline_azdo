@@ -27,4 +27,4 @@ steps:
         #   --commit-sha ${{ parameters.commitSha }}\
         #   --target-environment ${{ parameters.targetEnvironment }}
       azureSubscription: $(sandboxSubscriptionId)
-      addSpnToEnvironment: true
+      # addSpnToEnvironment: true
