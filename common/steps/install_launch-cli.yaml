@@ -3,12 +3,7 @@ steps:
     displayName: 'Use Python 3.11'
     inputs:
       versionSpec: 3.11
-  - task: AzureClI@2
-    displayName: Install Launch CLI
-    inputs:
-      scriptType: bash
-      scriptLocation: inlineScript
-      workingDirectory: $(System.DefaultWorkingDirectory)
-      inlineScript: |
-        set -ex
-        python3 -m pip install launch-cli
+  - script: |
+      set -ex
+      python3 -m pip install launch-cli
+    displayName: 'Install Launch CLI'
