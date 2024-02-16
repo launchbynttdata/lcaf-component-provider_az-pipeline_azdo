@@ -1,6 +1,7 @@
 parameters:
 - name: vmImageNameMSFTHosted
   type: string
+  default: 'ubuntu-latest'
 
 pool:
   vmImage: ${{ parameters.vmImageNameMSFTHosted }}
