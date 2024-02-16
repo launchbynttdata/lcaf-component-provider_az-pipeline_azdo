@@ -15,7 +15,7 @@ parameters:
     default: ''
 
 steps:
-  - template: 
+  - template: ../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
     displayName: Run Launch Pipeline Terragrunt Apply
     inputs:
