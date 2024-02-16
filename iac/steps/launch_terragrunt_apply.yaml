@@ -22,6 +22,7 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
+        set -ex
         pip3 install launch-cli
         echo "dryrun: launch pipeline terragrunt apply"
         # launch pipeline terragrunt apply \
