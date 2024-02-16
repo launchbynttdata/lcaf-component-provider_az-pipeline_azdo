@@ -1,11 +1,11 @@
 parameters:
   - name: vmImageNameMSFTHosted
     type: string
-  - name: subscriptionId
+  - name: serviceConnection
     type: string
 
 stages:
   - template: ../stages/sandbox.yaml
     parameters:
       vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
-      subscriptionId: ${{ parameters.subscriptionId }}
+      serviceConnection: ${{ parameters.serviceConnection }}
