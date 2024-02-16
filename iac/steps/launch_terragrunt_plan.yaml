@@ -26,5 +26,5 @@ steps:
         #   --git-token ${{ parameters.gitToken }}\
         #   --commit-sha ${{ parameters.commitSha }}\
         #   --target-environment ${{ parameters.targetEnvironment }}
-      azureSubscription: $(sandboxSubscriptionId)
+      # azureSubscription: $(sandboxSubscriptionId)
       # addSpnToEnvironment: true
