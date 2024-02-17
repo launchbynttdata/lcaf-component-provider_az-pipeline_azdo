@@ -1,0 +1,16 @@
+parameters:
+  - name: vmImageNameMSFTHosted
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: targetEnvironment
+    type: string
+
+stages:
+  - stage: Release
+    displayName: Release - ${{ parameters.targetEnvironment }}
+    jobs:
+      - template: ../jobs/deploy.yaml
+        parameters:
+          vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
+          serviceConnection: ${{ parameters.serviceConnection }}

@@ -1,0 +1,19 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: from_branch
+    type: string
+
+steps:
+  - task: AzureClI@2
+    displayName: Launch Github Version Predict
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        echo "dryrun: launch github version predict"
+        # launch github version predict \
+        # --source-branch "${{ parameters.from_branch}}"
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true

@@ -23,7 +23,6 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        launch --version
         echo "dryrun: launch pipeline terragrunt apply"
         # launch pipeline terragrunt apply \
         #   --repository-url  ${{ parameters.repositoryUrl }}\

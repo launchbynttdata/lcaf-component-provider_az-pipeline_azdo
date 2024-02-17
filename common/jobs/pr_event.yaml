@@ -1,0 +1,18 @@
+parameters:
+  - name: vmImageNameMSFTHosted
+    type: string
+  - name: serviceConnection
+    type: string
+
+jobs:
+  - job: PullRequestEvent
+    displayName: Pull Request Event
+    pool:
+      vmImage: ${{ parameters.vmImageNameMSFTHosted }}
+    steps:
+      - template: ../steps/launch_make_check.yaml
+        parameters:
+          serviceConnection: ${{ parameters.serviceConnection }}
+      - template: ../steps/launch_version_predict.yaml
+        parameters:
+          serviceConnection: ${{ parameters.serviceConnection }}
