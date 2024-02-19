@@ -3,6 +3,8 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
+  - name: targetEnvironment
+    type: string
 
 jobs:
   - job: Deploy
@@ -13,3 +15,4 @@ jobs:
       - template: ../steps/launch_terragrunt_apply.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
+          targetEnvironment: ${{ parameters.targetEnvironment }}
