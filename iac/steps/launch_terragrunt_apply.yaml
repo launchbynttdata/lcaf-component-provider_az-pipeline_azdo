@@ -12,7 +12,6 @@ parameters:
     default: ''
   - name: targetEnvironment
     type: string
-    default: ''
 
 steps:
   - template: ../../common/steps/install_launch-cli.yaml

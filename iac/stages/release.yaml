@@ -14,3 +14,4 @@ stages:
         parameters:
           vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
           serviceConnection: ${{ parameters.serviceConnection }}
+          targetEnvironment: $(targetEnvironment)
