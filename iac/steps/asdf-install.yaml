@@ -1,0 +1,22 @@
+# installs a single asdf dependency
+parameters:
+  - name: pluginName
+    type: string
+    default: false
+  - name: pluginVersion
+    type: string
+    default: false
+
+steps:
+  - task: Bash@3
+    displayName: "ASDF Install ${{ parameters.pluginName }} ${{ parameters.pluginVersion }}"
+    inputs:
+      targetType: 'inline'
+      script: |
+        type ${{parameters.pluginName}} || echo "asdf plugin not found. Installing.."
+        asdf plugin add ${{ parameters.pluginName }}
+        asdf install ${{ parameters.pluginName }} ${{ parameters.pluginVersion }}
+        # Add to the ~/.tool-versions unless you add it to the project
+        asdf global ${{ parameters.pluginName }} ${{ parameters.pluginVersion }}
+        asdf reshim
+        type ${{ parameters.pluginName }} || exit 1
