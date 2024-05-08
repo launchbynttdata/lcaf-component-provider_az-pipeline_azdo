@@ -1,0 +1,85 @@
+parameters:
+- name: deployEnvironments
+  type: object
+  default: []
+- name: agentPool
+  type: string
+  default: ''
+
+stages:
+  - ${{ each deployEnv in parameters.deployEnvironments }}:
+    - stage: ${{ deployEnv.environment}}_PreDeploy
+      displayName: '${{ deployEnv.environment }} - Pre deploy'
+      dependsOn: ${{deployEnv.dependsOn}}
+      jobs:
+        - job: PreDeployDevJob
+          displayName: '${{ deployEnv.environment }} - Pre deploy'
+          pool: ${{ parameters.agentPool }}
+          workspace:
+            clean: all
+          steps:
+            - checkout: self
+            - checkout: 'ado-utils'
+            - template: ../steps/helm-diff.yaml
+              parameters:
+                serviceConnection: ${{ deployEnv.serviceConnection }}
+                namespace: ${{ deployEnv.namespace }}
+                releaseName: ${{ deployEnv.releaseName }}
+                acrName: ${{ deployEnv.acrName }}
+                imageName: ${{ deployEnv.imageName }}
+                imageTag: ${{ deployEnv.imageTag }}
+                deployEnv: ${{ deployEnv.environment }}
+                helmChart: ${{ deployEnv.helmChart }}
+                helmChartVersion: ${{ deployEnv.helmChartVersion }}
+                additionalSteps:
+                  - template: ../steps/asdf-install.yaml
+                    parameters:
+                      pluginName: 'helm-diff'
+                      pluginVersion: '3.9.5'
+                  - template: ../steps/get-kubernetes-credentials.yaml
+                    parameters:
+                      serviceConnection: ${{ deployEnv.serviceConnection }}
+                      aksResourceGroup: ${{ deployEnv.aksResourceGroup }}
+                      aksCluster: ${{ deployEnv.aksCluster }}
+                  - template: ../steps/helm-acr-login.yaml
+                    parameters:
+                      serviceConnection: ${{ deployEnv.serviceConnection }}
+                      acrName: ${{ deployEnv.acrName }}
+    - stage: ${{ deployEnv.environment }}_Deploy
+      displayName: '${{ deployEnv.environment }} - Deploy'
+      dependsOn: ${{ deployEnv.environment}}_PreDeploy
+      jobs:
+        - deployment: ${{ deployEnv.environment }}_DeployJob
+          displayName: '${{ deployEnv.environment }} Deploy'
+          pool: ${{ parameters.agentPool }}
+          workspace:
+            clean: all
+          environment: ${{ deployEnv.azureEnvironment }}
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - checkout: self
+                  - checkout: 'ado-utils'
+                  - template: ../steps/helm-upgrade.yaml
+                    parameters:
+                      serviceConnection: ${{ deployEnv.serviceConnection }}
+                      namespace: ${{ deployEnv.namespace }}
+                      releaseName: ${{ deployEnv.releaseName }}
+                      acrName: ${{ deployEnv.acrName }}
+                      imageName: ${{ deployEnv.imageName }}
+                      imageTag: ${{ deployEnv.imageTag }}
+                      deployEnv: ${{ deployEnv.environment }}
+                      helmChart: ${{ deployEnv.helmChart }}
+                      helmChartVersion: ${{ deployEnv.helmChartVersion }}
+                      additionalSteps:
+                        - template: ../steps/verify-ado-agent.yaml
+                        - template: ../steps/get-kubernetes-credentials.yaml
+                          parameters:
+                            serviceConnection: ${{ deployEnv.serviceConnection }}
+                            aksResourceGroup: ${{ deployEnv.aksResourceGroup }}
+                            aksCluster: ${{ deployEnv.aksCluster }}
+                        - template: ../steps/helm-acr-login.yaml
+                          parameters:
+                            serviceConnection: ${{ deployEnv.serviceConnection }}
+                            acrName: ${{ deployEnv.acrName }}     
