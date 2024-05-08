@@ -1,0 +1,39 @@
+parameters:
+  - name: serviceConnection
+    type: string
+    default: ''
+  - name: environment
+    type: string
+    default: ''
+  - name: region
+    type: string
+    default: ''
+  - name: environmentNumber
+    type: string
+    default: ''
+  - name: workingDirectory
+    type: string
+    default: "$(Pipeline.Workspace)/main"
+
+steps:
+  - task: AzureCLI@2
+    displayName: 'Terragrunt Init and Plan'
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      addSpnToEnvironment: true
+      workingDirectory: ${{ parameters.workingDirectory }}
+      inlineScript: |
+        set -x
+
+        export ARM_CLIENT_ID=$servicePrincipalId
+        export ARM_CLIENT_SECRET=$servicePrincipalKey
+        export ARM_TENANT_ID=$tenantId
+        export ARM_SUBSCRIPTION_ID=$(az account show | jq -r ".id")
+        echo "Present Working directory: $(pwd)"
+        cd "env/${{ parameters.environment }}/${{ parameters.region }}/${{ parameters.environmentNumber }}"
+        echo "Running Terragrunt Init"
+        terragrunt init 
+        echo "Running Terragrunt Plan"
+        terragrunt plan

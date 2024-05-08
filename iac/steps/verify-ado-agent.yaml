@@ -10,6 +10,5 @@ steps:
         echo -e "Logged In user: $(whoami)"
         echo -e "List of files in the current directory: \n$(ls -l)"
         echo -e "Environment Variables: \n$(env)"
-        type kubectl || exit 1
-        type helm || exit 1
+        type az || exit 1
         type asdf || exit 1

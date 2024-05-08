@@ -1,4 +1,7 @@
-# A complete terragrunt pipeline with pre-deploy and deploy stages
+# This template assumes there are 2 repositories: the main repository and the utils repository. 
+# The utils repository contains common bash functions and ADO pipeline templates. 
+# The main repository contains the codebase for the application
+
 parameters:
 - name: deployEnvironments
   type: object
@@ -6,87 +9,53 @@ parameters:
 - name: userSteps
   type: stepList
   default: []
-- name: subscription
-  type: string
-  default: false
 - name: pool
   type: string
-  default: 'container-pool'
+  default: false
+- name: repoCheckoutSteps
+  type: stepList
+  default: []
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
-      - stage: ${{deployEnv.environment}}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber}}_pre_deploy
-        displayName: '${{deployEnv.environment}} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber}} - Pre Deploy'
-        dependsOn: ${{deployEnv.dependsOn}}
+      - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_pre_deploy
+        displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre Deploy'
+        dependsOn: ${{ deployEnv.dependsOn }}
         jobs:
           - job: ${{ deployEnv.environment }}_TerraformInitPlan
-            displayName: '${{deployEnv.environment}} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber}} - Terraform Init and Plan'
+            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terraform Init and Plan'
             pool: ${{ parameters.pool }}
             workspace:
               clean: all
             steps:
-              - task: Bash@3
-                displayName: 'Verify Environment'
-                inputs:
-                  targetType: 'inline'
-                  script: |
-                    set -x
-                    type terragrunt || exit 1
-                    type jq || exit 1
-                    type asdf || exit 1
-                    echo "Present Working directory: $(pwd)"  
-                    echo "Installing ASDF"
-                    asdf install
-                    echo "Checking for Terragrunt"
-                    terragrunt -version
-              - task: AzureCLI@2
-                displayName: 'Terragrunt Init and Plan'
-                inputs:
-                  azureSubscription: ${{parameters.subscription}}
-                  scriptType: 'bash'
-                  scriptLocation: 'inlineScript'
-                  addSpnToEnvironment: true
-                  inlineScript: |
-                    set -x
-                    export ARM_CLIENT_ID=$servicePrincipalId
-                    export ARM_CLIENT_SECRET=$servicePrincipalKey
-                    export ARM_TENANT_ID=$tenantId
-                    export ARM_SUBSCRIPTION_ID=$(az account show | jq -r ".id")
-                    echo "Present Working directory: $(pwd)"
-                    cd "env/${{deployEnv.environment}}/${{ deployEnv.region }}/${{ deployEnv.environmentNumber}}"
-                    echo "Running Terragrunt Init"
-                    terragrunt init 
-                    echo "Running Terragrunt Plan"
-                    terragrunt plan
-      - stage: ${{deployEnv.environment}}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber}}_deploy
-        displayName: '${{deployEnv.environment}} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber}} - Deploy'
-        dependsOn: ${{deployEnv.environment}}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber}}_pre_deploy
+              - ${{ each step in parameters.repoCheckoutSteps }}:
+                - ${{ step }}
+              - template: ../steps/verify-ado-agent.yaml
+              - template: ../steps/terragrunt-plan.yaml
+                parameters:
+                  serviceConnection: ${{ deployEnv.serviceConnection }}
+                  environment: ${{ deployEnv.environment }}
+                  region: ${{ deployEnv.region }}
+                  environmentNumber: ${{ deployEnv.environmentNumber }}
+                  workingDirectory: "$(Pipeline.Workspace)/main"
+      - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy
+        displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
+        dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_pre_deploy
         jobs:
-          - deployment: '${{deployEnv.environment}}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber}}_deploy'
-            displayName: '${{deployEnv.environment}} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber}} - Terragrunt Apply'
+          - deployment: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy'
+            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terragrunt Apply'
             pool: ${{ parameters.pool }}
             environment: ${{ deployEnv.azureEnvironment }}
             strategy:
               runOnce:
                 deploy:
                   steps:
-                    - task: AzureCLI@2
-                      displayName: 'Terraform Apply'
-                      inputs:
-                        azureSubscription: ${{parameters.subscription}}
-                        scriptType: 'bash'
-                        scriptLocation: 'inlineScript'
-                        addSpnToEnvironment: true
-                        inlineScript: |
-                          set -x
-                          export ARM_CLIENT_ID=$servicePrincipalId
-                          export ARM_CLIENT_SECRET=$servicePrincipalKey
-                          export ARM_TENANT_ID=$tenantId
-                          export ARM_SUBSCRIPTION_ID=$(az account show | jq -r ".id")
-                          echo "Present Working directory: $(pwd)"
-                          echo "ASDF Install"
-                          asdf install
-                          cd "env/${{deployEnv.environment}}/${{ deployEnv.region }}/${{ deployEnv.environmentNumber}}"
-                          echo "Running Terragrunt Apply"
-                          terragrunt init
-                          terragrunt apply -auto-approve
+                    - ${{ each step in parameters.repoCheckoutSteps }}:
+                      - ${{ step }}
+                    - template: ../steps/terragrunt-apply.yaml
+                      parameters:
+                        serviceConnection: ${{ deployEnv.serviceConnection }}
+                        environment: ${{ deployEnv.environment }}
+                        region: ${{ deployEnv.region }}
+                        environmentNumber: ${{ deployEnv.environmentNumber }}
+                        workingDirectory: "$(Pipeline.Workspace)/main"
