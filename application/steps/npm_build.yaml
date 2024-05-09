@@ -1,0 +1,6 @@
+steps:
+  - task: CmdLine@2
+    displayName: npm build
+    inputs:
+      script: |
+        npm run build

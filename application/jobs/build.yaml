@@ -24,3 +24,5 @@ jobs:
       - template: ../steps/npm_install.yaml
         parameters:
           legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
+
+      - template: ../steps/npm_build.yaml
