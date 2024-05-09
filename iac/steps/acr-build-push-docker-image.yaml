@@ -1,17 +1,17 @@
 parameters:
-  name: dockerImageName
+  - name: dockerImageName
     type: string
     default: false
-  name: dockerImageTag
+  - name: dockerImageTag
     type: string
     default: false
-  name: acrRegistry
+  - name: acrRegistry
     type: string
     default: false
-  name: serviceConnection
+  - name: serviceConnection
     type: string
     default: false
-  name: workingDirectory
+  - name: workingDirectory
     type: string
     default: $(Pipeline.Workspace)
 

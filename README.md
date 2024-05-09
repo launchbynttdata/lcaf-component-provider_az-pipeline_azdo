@@ -99,8 +99,8 @@ Templates can accept inputs in form of parameters. There are various data types 
 2. When a parameter type `object` is used in a template, user can pass any arbitrary values. To make it more readable, its recommended to provided documentation or default values
 
 3. While checking out multiple repositories in a pipeline, set the `workingDirectory` for the tasks in the reusable templates to `$(Pipeline.Workspace)/main` where `main` is the `self` repository. Also checkout the repos like below
-  
-  ```yaml 
+
+  ```yaml
   - checkout: self
     path: main
   - checkout: utils

@@ -69,7 +69,7 @@ steps:
         envVarsFile=${envFolder}/application/env_vars.yaml
         secretsValuesFile=${envFolder}/application/secrets.yaml
         helmValuesFile=${envFolder}/helm/values.yaml
-        
+
         helm diff upgrade --install ${{ parameters.releaseName }} oci://${{ parameters.acrName }}/helm/${{ parameters.helmChart }} \
           --version ${{ parameters.helmChartVersion }} -n ${{ parameters.namespace }} --set image.tag=$imageTag \
           --set image.repository="${imageRepository}" -f ${helmValuesFile} -f ${envVarsFile} -f ${secretsValuesFile} --allow-unreleased

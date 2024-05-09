@@ -1,5 +1,5 @@
-# This template assumes there are 2 repositories: the main repository and the utils repository. 
-# The utils repository contains common bash functions and ADO pipeline templates. 
+# This template assumes there are 2 repositories: the main repository and the utils repository.
+# The utils repository contains common bash functions and ADO pipeline templates.
 # The main repository contains the codebase for the application
 
 parameters:

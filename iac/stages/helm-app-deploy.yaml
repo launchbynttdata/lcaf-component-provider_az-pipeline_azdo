@@ -88,4 +88,4 @@ stages:
                         - template: ../steps/helm-acr-login.yaml
                           parameters:
                             serviceConnection: ${{ deployEnv.serviceConnection }}
-                            acrName: ${{ deployEnv.acrName }}     
+                            acrName: ${{ deployEnv.acrName }}

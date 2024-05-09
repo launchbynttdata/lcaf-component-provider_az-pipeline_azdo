@@ -11,7 +11,7 @@ parameters:
   - name: environmentNumber
     type: string
     default: ''
-  # In case of multiple repos are checked out, the default working directory would be $(Pipeline.Workspace). So, one 
+  # In case of multiple repos are checked out, the default working directory would be $(Pipeline.Workspace). So, one
   # needs to override that to the main repository for terragrunt run
   - name: workingDirectory
     type: string
@@ -36,6 +36,6 @@ steps:
         echo "Present Working directory: $(pwd)"
         cd "env/${{ parameters.environment }}/${{ parameters.region }}/${{ parameters.environmentNumber }}"
         echo "Running Terragrunt Init"
-        terragrunt init 
+        terragrunt init
         echo "Running Terragrunt Apply"
         terragrunt apply -auto-approve
