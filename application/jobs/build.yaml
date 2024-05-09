@@ -21,6 +21,6 @@ jobs:
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
       
-      - template: ../steps/npm_install.yml
+      - template: ../steps/npm_install.yaml
         parameters:
           legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
