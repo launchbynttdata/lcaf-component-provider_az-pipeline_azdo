@@ -35,7 +35,7 @@ parameters:
   # If there are multiple repos checked out, then this should change to say $(Pipeline.Workspace)/main. main being the name of the repo
   - name: workingDirectory
     type: string
-    default: $(Pipeline.Workspace)
+    default: $(Pipeline.Workspace)/s
 
 steps:
   - ${{ each step in parameters.additionalSteps }}:
