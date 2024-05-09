@@ -15,6 +15,6 @@ jobs:
     steps:
       - ${{ parameters.repoCheckoutSteps }}
 
-      - template: ../steps/launch_make_configure.yaml
+      - template: ../steps/launch_make_configure.yml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
