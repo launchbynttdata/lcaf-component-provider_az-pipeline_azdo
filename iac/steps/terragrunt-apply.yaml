@@ -11,6 +11,8 @@ parameters:
   - name: environmentNumber
     type: string
     default: ''
+  # In case of multiple repos are checked out, the default working directory would be $(Pipeline.Workspace). So, one 
+  # needs to override that to the main repository for terragrunt run
   - name: workingDirectory
     type: string
     default: "$(Pipeline.Workspace)/main"

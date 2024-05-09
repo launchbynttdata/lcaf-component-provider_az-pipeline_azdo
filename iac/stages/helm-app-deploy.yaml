@@ -2,6 +2,12 @@ parameters:
 - name: deployEnvironments
   type: object
   default: []
+  # Sample deployEnvironments object
+  # - environment: sandbox
+  #   region: eastus
+  #   environmentNumber: "000"
+  #   azureEnvironment: az-env-000
+  #   serviceConnection: $(service_connection_sandbox)
 - name: agentPool
   type: string
   default: ''
