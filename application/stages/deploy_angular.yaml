@@ -21,7 +21,10 @@ parameters:
   - name: storageAccountName
     type: string
   - name: srcFilePath
-    type: string        
+    type: string     
+  - name: timeInMinutes
+    type: number
+    default: 1       
 
 stages:
   - stage: DeployAngularApplication
@@ -40,3 +43,4 @@ stages:
           destAppConfigJsonDirPath: ${{ parameters.destAppConfigJsonDirPath }}
           storageAccountName: ${{ parameters.storageAccountName }}
           srcFilePath: ${{ parameters.srcFilePath }}
+          timeInMinutes: ${{ parameters.timeInMinutes }}
