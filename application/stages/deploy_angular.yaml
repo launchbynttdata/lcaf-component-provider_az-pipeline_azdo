@@ -1,0 +1,30 @@
+parameters:
+  - name: agentPool
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
+  - name: artifactFeedName
+    type: string
+  - name: buildPackageName
+    type: string
+  - name: packageVersion
+    type: string    
+  - name: downloadDirectory
+    type: string   
+
+stages:
+  - stage: DeployAngularApplication
+    displayName: 'Deploy Angular Application'
+    jobs:
+      - template: ../jobs/deploy.yaml
+        parameters:
+          agentPool: ${{ parameters.agentPool }}
+          serviceConnection: ${{ parameters.serviceConnection }}
+          repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
+          artifactFeedName: ${{ parameters.artifactFeedName }}
+          buildPackageName: ${{ parameters.buildPackageName }}
+          packageVersion: ${{ parameters.packageVersion }}
+          downloadDirectory: ${{ parameters.downloadDirectory }}

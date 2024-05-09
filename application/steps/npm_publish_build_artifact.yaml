@@ -1,7 +1,4 @@
 parameters:
-  - name: legacyPeerDeps
-    type: boolean
-    default: false
   - name: packageDirectory
     type: string
   - name: artifactFeedName

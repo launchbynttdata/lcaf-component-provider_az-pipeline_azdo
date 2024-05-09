@@ -1,0 +1,19 @@
+parameters:
+  - name: artifactFeedName
+    type: string
+  - name: buildPackageName
+    type: string
+  - name: packageVersion
+    type: string    
+  - name: downloadDirectory
+    type: string        
+
+steps:
+  - task: UniversalPackages@0
+    displayName: Download a Universal Package
+    inputs:
+      command: download
+      vstsFeed: ${{ parameters.artifactFeedName }}
+      vstsFeedPackage: ${{ parameters.buildPackageName }}
+      vstsPackageVersion: ${{ parameters.packageVersion }}
+      downloadDirectory: ${{ parameters.downloadDirectory }}

@@ -21,8 +21,8 @@ parameters:
     type: string    
 
 jobs:
-  - job: PullRequestEvent
-    displayName: Pull Request Event
+  - job: BuildApplication
+    displayName: 'Build Application'
     pool: ${{ parameters.agentPool }}
     steps:
       - ${{ parameters.repoCheckoutSteps }}
@@ -37,7 +37,7 @@ jobs:
 
       - template: ../steps/npm_build.yaml
 
-      - template: ../steps/npm_public_build_artifact.yaml
+      - template: ../steps/npm_publish_build_artifact.yaml
         parameters:
           packageDirectory: ${{ parameters.packageDirectory }}   
           artifactFeedName: ${{ parameters.artifactFeedName }}

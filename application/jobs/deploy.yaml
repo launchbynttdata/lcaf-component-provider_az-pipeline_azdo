@@ -1,0 +1,30 @@
+parameters:
+  - name: agentPool
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
+  - name: artifactFeedName
+    type: string
+  - name: buildPackageName
+    type: string
+  - name: packageVersion
+    type: string    
+  - name: downloadDirectory
+    type: string   
+
+jobs:
+  - job: DeployApplicationToSandboxEnvironment
+    displayName: 'Deploy Application to sandbox Environment'
+    pool: ${{ parameters.agentPool }}
+    steps:
+      - ${{ parameters.repoCheckoutSteps }}
+
+      - template: ../steps/npm_download_build_artifact.yaml
+        parameters:
+          artifactFeedName: ${{ parameters.artifactFeedName }}
+          buildPackageName: ${{ parameters.buildPackageName }}
+          packageVersion: ${{ parameters.packageVersion }}
+          downloadDirectory: ${{ parameters.downloadDirectory }}
