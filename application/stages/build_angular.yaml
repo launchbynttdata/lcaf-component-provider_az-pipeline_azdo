@@ -10,7 +10,7 @@ parameters:
     type: boolean
     default: false
 stages:
-  - stage: 'Build Angular Application'
+  - stage: BuildAngularApplication
     displayName: 'Build Angular Application'
     jobs:
       - template: ../jobs/build.yaml
