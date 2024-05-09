@@ -1,0 +1,14 @@
+parameters:
+  - name: srcAppConfigJsonPath
+    type: string
+  - name: destAppConfigJsonDirPath
+    type: string
+
+
+steps:
+  - task: CmdLine@2
+    displayName: Swap env files
+    inputs:
+      script: |
+        echo "Swap env files"
+        mv ${{ parameters.srcAppConfigJsonPath }} ${{ destAppConfigJsonDirPath }}

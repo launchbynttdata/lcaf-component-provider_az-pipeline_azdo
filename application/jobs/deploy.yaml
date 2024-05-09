@@ -14,6 +14,10 @@ parameters:
     type: string    
   - name: downloadDirectory
     type: string   
+  - name: srcAppConfigJsonPath
+    type: string
+  - name: destAppConfigJsonDirPath
+    type: string    
 
 jobs:
   - job: DeployApplicationToSandboxEnvironment
@@ -28,3 +32,8 @@ jobs:
           buildPackageName: ${{ parameters.buildPackageName }}
           packageVersion: ${{ parameters.packageVersion }}
           downloadDirectory: ${{ parameters.downloadDirectory }}
+      
+      - template: ../steps/npm_swap_files.yaml
+        parameters:
+          srcAppConfigJsonPath: ${{ parameters.srcAppConfigJsonPath }}
+          destAppConfigJsonDirPath: ${{ parameters.destAppConfigJsonDirPath }}
