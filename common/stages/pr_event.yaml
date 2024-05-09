@@ -1,5 +1,5 @@
 parameters:
-  - name: vmImageNameAKSHosted
+  - name: agentPool
     type: string
   - name: serviceConnection
     type: string
@@ -13,6 +13,6 @@ stages:
     jobs:
       - template: ../jobs/pr_event.yaml
         parameters:
-          vmImageNameAKSHosted: ${{ parameters.vmImageNameAKSHosted }}
+          agentPool: ${{ parameters.agentPool }}
           serviceConnection: ${{ parameters.serviceConnection }}
           repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}

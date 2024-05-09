@@ -1,5 +1,5 @@
 parameters:
-  - name: vmImageNameAKSHosted
+  - name: agentPool
     type: string
   - name: serviceConnection
     type: string
@@ -10,8 +10,7 @@ parameters:
 jobs:
   - job: PullRequestEvent
     displayName: Pull Request Event
-    pool:
-      vmImage: ${{ parameters.vmImageNameAKSHosted }}
+    pool: ${{ parameters.agentPool }}
     steps:
       - ${{ parameters.repoCheckoutSteps }}
 
