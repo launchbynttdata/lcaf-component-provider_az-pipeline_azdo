@@ -1,5 +1,5 @@
 parameters:
-  - name: legacy-peer-deps
+  - name: legacyPeerDeps
     type: boolean
     default: false
 
@@ -8,5 +8,5 @@ steps:
     displayName: npm install
     inputs:
       script: |
-        npm config set legacy-peer-deps ${{ parameters.legacy-peer-deps }}
+        npm config set legacy-peer-deps ${{ parameters.legacyPeerDeps }}
         npm install
