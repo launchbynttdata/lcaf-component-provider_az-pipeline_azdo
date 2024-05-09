@@ -18,3 +18,4 @@ stages:
           agentPool: ${{ parameters.agentPool }}
           serviceConnection: ${{ parameters.serviceConnection }}
           repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
+          legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
