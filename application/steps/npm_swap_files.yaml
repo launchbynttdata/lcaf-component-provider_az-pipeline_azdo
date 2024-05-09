@@ -11,4 +11,4 @@ steps:
     inputs:
       script: |
         echo "Swap env files"
-        mv ${{ parameters.srcAppConfigJsonPath }} ${{ destAppConfigJsonDirPath }}
+        mv ${{ parameters.srcAppConfigJsonPath }} ${{ parameters.destAppConfigJsonDirPath }}
