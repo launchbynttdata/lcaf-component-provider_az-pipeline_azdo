@@ -18,6 +18,10 @@ parameters:
     type: string
   - name: destAppConfigJsonDirPath
     type: string 
+  - name: storageAccountName
+    type: string
+  - name: srcFilePath
+    type: string        
 
 stages:
   - stage: DeployAngularApplication
@@ -34,3 +38,5 @@ stages:
           downloadDirectory: ${{ parameters.downloadDirectory }}
           srcAppConfigJsonPath: ${{ parameters.srcAppConfigJsonPath }}
           destAppConfigJsonDirPath: ${{ parameters.destAppConfigJsonDirPath }}
+          storageAccountName: ${{ parameters.storageAccountName }}
+          srcFilePath: ${{ parameters.srcFilePath }}

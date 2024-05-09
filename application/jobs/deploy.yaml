@@ -18,6 +18,11 @@ parameters:
     type: string
   - name: destAppConfigJsonDirPath
     type: string    
+  - name: storageAccountName
+    type: string
+  - name: srcFilePath
+    type: string    
+
 
 jobs:
   - job: DeployApplicationToSandboxEnvironment
@@ -37,3 +42,9 @@ jobs:
         parameters:
           srcAppConfigJsonPath: ${{ parameters.srcAppConfigJsonPath }}
           destAppConfigJsonDirPath: ${{ parameters.destAppConfigJsonDirPath }}
+
+      - template: ../steps/npm_upload_files_to_container.yaml
+        parameters:
+          serviceConnection: ${{ parameters.serviceConnection }}
+          storageAccountName: ${{ parameters.storageAccountName }}
+          srcFilePath: ${{ parameters.srcFilePath }}
