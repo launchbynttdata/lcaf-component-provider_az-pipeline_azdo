@@ -1,0 +1,26 @@
+parameters:
+  - name: agentPool
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
+  - name: legacyPeerDeps
+    type: bool
+    default: false
+
+jobs:
+  - job: PullRequestEvent
+    displayName: Pull Request Event
+    pool: ${{ parameters.agentPool }}
+    steps:
+      - ${{ parameters.repoCheckoutSteps }}
+
+      - template: ../steps/launch_make_configure.yml
+        parameters:
+          serviceConnection: ${{ parameters.serviceConnection }}
+      
+      - template: ../steps/npm_install.yml
+        parameters:
+          legacyPeerDeps: ${{ parameters.legacyPeerDeps }}

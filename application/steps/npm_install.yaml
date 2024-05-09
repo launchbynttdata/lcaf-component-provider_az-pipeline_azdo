@@ -1,0 +1,12 @@
+parameters:
+  - name: legacy-peer-deps
+    type: bool
+    default: false
+
+steps:
+  - task: CmdLine@2
+    displayName: npm install
+    inputs:
+      script: |
+        npm config set legacy-peer-deps ${{ parameters.legacy-peer-deps }}
+        npm install

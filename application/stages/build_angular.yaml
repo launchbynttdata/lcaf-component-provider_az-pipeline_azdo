@@ -1,0 +1,20 @@
+parameters:
+  - name: agentPool
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
+  - name: legacyPeerDeps
+    type: bool
+    default: false
+stages:
+  - stage: 'Build Angular Application'
+    displayName: 'Build Angular Application'
+    jobs:
+      - template: ../jobs/build.yaml
+        parameters:
+          agentPool: ${{ parameters.agentPool }}
+          serviceConnection: ${{ parameters.serviceConnection }}
+          repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
