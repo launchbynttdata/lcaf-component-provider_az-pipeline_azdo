@@ -9,6 +9,17 @@ parameters:
   - name: legacyPeerDeps
     type: boolean
     default: false
+  - name: packageDirectory
+    type: string
+  - name: artifactFeedName
+    type: string
+  - name: buildPackageName
+    type: string
+  - name: packagePublishDescription
+    type: string
+  - name: versionOption
+    type: string    
+
 stages:
   - stage: BuildAngularApplication
     displayName: 'Build Angular Application'
@@ -19,3 +30,8 @@ stages:
           serviceConnection: ${{ parameters.serviceConnection }}
           repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
           legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
+          packageDirectory: ${{ parameters.packageDirectory }}
+          artifactFeedName: ${{ parameters.artifactFeedName }}
+          buildPackageName: ${{ parameters.buildPackageName }}
+          packagePublishDescription: ${{ parameters.packagePublishDescription }}
+          versionOption: ${{ parameters.versionOption }}

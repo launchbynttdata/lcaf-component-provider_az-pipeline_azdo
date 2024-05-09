@@ -9,6 +9,16 @@ parameters:
   - name: legacyPeerDeps
     type: boolean
     default: false
+  - name: packageDirectory
+    type: string
+  - name: artifactFeedName
+    type: string
+  - name: buildPackageName
+    type: string
+  - name: packagePublishDescription
+    type: string
+  - name: versionOption
+    type: string    
 
 jobs:
   - job: PullRequestEvent
@@ -26,3 +36,11 @@ jobs:
           legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
 
       - template: ../steps/npm_build.yaml
+
+      - template: ../steps/npm_public_build_artifact.yaml
+        parameters:
+          packageDirectory: ${{ parameters.packageDirectory }}   
+          artifactFeedName: ${{ parameters.artifactFeedName }}
+          buildPackageName: ${{ parameters.buildPackageName }}
+          packagePublishDescription: ${{ parameters.packagePublishDescription }}
+          versionOption: ${{ parameters.versionOption }}
