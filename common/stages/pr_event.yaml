@@ -1,10 +1,11 @@
 parameters:
-  - name: vmImageNameMSFTHosted
+  - name: vmImageNameAKSHosted
     type: string
   - name: serviceConnection
     type: string
-  - name: targetEnvironment
-    type: string
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
 
 stages:
   - stage: PullRequestEvent
@@ -12,5 +13,6 @@ stages:
     jobs:
       - template: ../jobs/pr_event.yaml
         parameters:
-          vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
+          vmImageNameAKSHosted: ${{ parameters.vmImageNameAKSHosted }}
           serviceConnection: ${{ parameters.serviceConnection }}
+          repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}

@@ -1,0 +1,12 @@
+steps:
+  - task: AzureClI@2
+    displayName: Launch Make Configure
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        echo "dryrun: make configure"
+        make configure
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true

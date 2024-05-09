@@ -1,18 +1,20 @@
 parameters:
-  - name: vmImageNameMSFTHosted
+  - name: vmImageNameAKSHosted
     type: string
   - name: serviceConnection
     type: string
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
 
 jobs:
   - job: PullRequestEvent
     displayName: Pull Request Event
     pool:
-      vmImage: ${{ parameters.vmImageNameMSFTHosted }}
+      vmImage: ${{ parameters.vmImageNameAKSHosted }}
     steps:
-      - template: ../steps/launch_make_check.yaml
-        parameters:
-          serviceConnection: ${{ parameters.serviceConnection }}
-      - template: ../steps/launch_version_predict.yaml
+      - ${{ parameters.repoCheckoutSteps }}
+
+      - template: ../steps/launch_make_configure.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
