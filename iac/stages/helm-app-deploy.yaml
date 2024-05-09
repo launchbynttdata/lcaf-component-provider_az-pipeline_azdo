@@ -24,8 +24,8 @@ stages:
           workspace:
             clean: all
           steps:
-            - checkout: self
-            - checkout: 'ado-utils'
+            # - checkout: self
+            # - checkout: 'ado-utils'
             - template: ../steps/helm-diff.yaml
               parameters:
                 serviceConnection: ${{ deployEnv.serviceConnection }}
@@ -65,8 +65,8 @@ stages:
             runOnce:
               deploy:
                 steps:
-                  - checkout: self
-                  - checkout: 'ado-utils'
+                  # - checkout: self
+                  # - checkout: 'ado-utils'
                   - template: ../steps/helm-upgrade.yaml
                     parameters:
                       serviceConnection: ${{ deployEnv.serviceConnection }}
