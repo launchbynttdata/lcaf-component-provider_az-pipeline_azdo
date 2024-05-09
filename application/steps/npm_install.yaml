@@ -1,6 +1,6 @@
 parameters:
   - name: legacy-peer-deps
-    type: bool
+    type: boolean
     default: false
 
 steps:

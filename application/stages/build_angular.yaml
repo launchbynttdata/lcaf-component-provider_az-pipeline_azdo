@@ -7,7 +7,7 @@ parameters:
     type: stepList
     default: []
   - name: legacyPeerDeps
-    type: bool
+    type: boolean
     default: false
 stages:
   - stage: 'Build Angular Application'
