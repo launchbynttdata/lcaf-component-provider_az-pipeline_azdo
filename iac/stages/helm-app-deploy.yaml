@@ -24,8 +24,6 @@ stages:
           workspace:
             clean: all
           steps:
-            # Explicit checkout is needed in deploy job
-            - checkout: self
             - template: ../steps/helm-diff.yaml
               parameters:
                 serviceConnection: ${{ deployEnv.serviceConnection }}
@@ -65,6 +63,8 @@ stages:
             runOnce:
               deploy:
                 steps:
+                  # Explicit checkout is needed in deploy job
+                  - checkout: self
                   - template: ../steps/helm-upgrade.yaml
                     parameters:
                       serviceConnection: ${{ deployEnv.serviceConnection }}
