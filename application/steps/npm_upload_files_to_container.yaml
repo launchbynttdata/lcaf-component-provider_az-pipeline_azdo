@@ -4,7 +4,10 @@ parameters:
   - name: storageAccountName
     type: string
   - name: srcFilePath
-    type: string    
+    type: string   
+  - name: timeInMinutes
+    type: number
+    default: 1     
 
 
 steps:
@@ -15,4 +18,4 @@ steps:
       scriptType: 'bash'
       scriptLocation: inlineScript
       inlineScript: |
-        az storage azcopy blob upload --container '$web' --account-name ${{ parameters.storageAccountName }} --source ${{ parameters.srcFilePath }} --recursive
+        az storage blob upload-batch --destination '$web' --account-name ${{ parameters.storageAccountName }} --source ${{ parameters.srcFilePath }} --if-unmodified-since $(date -u -d "${{ parameters.timeInMinutes }} minutes ago" +%Y-%m-%dT%H:%MZ)
