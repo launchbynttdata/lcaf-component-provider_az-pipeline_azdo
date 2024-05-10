@@ -2,6 +2,12 @@ parameters:
 - name: deployEnvironments
   type: object
   default: []
+  # Sample deployEnvironments object
+  # - environment: sandbox
+  #   region: eastus
+  #   environmentNumber: "000"
+  #   azureEnvironment: az-env-000
+  #   serviceConnection: $(service_connection_sandbox)
 - name: agentPool
   type: string
   default: ''
@@ -18,8 +24,6 @@ stages:
           workspace:
             clean: all
           steps:
-            - checkout: self
-            - checkout: 'ado-utils'
             - template: ../steps/helm-diff.yaml
               parameters:
                 serviceConnection: ${{ deployEnv.serviceConnection }}
@@ -59,8 +63,8 @@ stages:
             runOnce:
               deploy:
                 steps:
+                  # Explicit checkout is needed in deploy job
                   - checkout: self
-                  - checkout: 'ado-utils'
                   - template: ../steps/helm-upgrade.yaml
                     parameters:
                       serviceConnection: ${{ deployEnv.serviceConnection }}
@@ -82,4 +86,4 @@ stages:
                         - template: ../steps/helm-acr-login.yaml
                           parameters:
                             serviceConnection: ${{ deployEnv.serviceConnection }}
-                            acrName: ${{ deployEnv.acrName }}     
+                            acrName: ${{ deployEnv.acrName }}

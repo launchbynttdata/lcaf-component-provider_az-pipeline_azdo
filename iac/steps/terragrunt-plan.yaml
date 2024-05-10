@@ -34,6 +34,6 @@ steps:
         echo "Present Working directory: $(pwd)"
         cd "env/${{ parameters.environment }}/${{ parameters.region }}/${{ parameters.environmentNumber }}"
         echo "Running Terragrunt Init"
-        terragrunt init 
+        terragrunt init
         echo "Running Terragrunt Plan"
         terragrunt plan
