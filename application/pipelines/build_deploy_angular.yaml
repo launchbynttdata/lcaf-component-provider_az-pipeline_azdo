@@ -1,0 +1,53 @@
+
+parameters:
+  - name: agentPool
+    type: string
+  - name: legacyPeerDeps
+    type: boolean
+    default: false
+  - name: packageDirectory
+    type: string
+  - name: artifactFeedName
+    type: string
+  - name: buildPackageName
+    type: string
+  - name: packagePublishDescription
+    type: string
+  - name: versionOption
+    type: string    
+  - name: deployEnvironments
+    type: object    
+
+stages:
+  - template: ../application/stages/build_angular.yaml@utils
+    parameters:
+      agentPool: ${{ parameters.agentPool }}
+      serviceConnection: $(service_connection_sandbox)
+      repoCheckoutSteps:
+        - checkout: self
+          path: main
+      legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
+      packageDirectory: ${{ parameters.packageDirectory }}
+      artifactFeedName: ${{ parameters.artifactFeedName }}
+      buildPackageName: ${{ parameters.buildPackageName }}
+      packagePublishDescription: ${{ parameters.packagePublishDescription }}
+      versionOption: ${{ parameters.versionOption }}
+  - template: ../application/stages/deploy_angular.yaml@utils
+    parameters:
+      deployEnvironments:
+        - environment: 'sandbox'
+          dependsOn: 'BuildAndPush'
+          agentPool: ${{ parameters.agentPool }}
+          serviceConnection: $(service_connection_sandbox)
+          repoCheckoutSteps:
+            - checkout: self
+              path: main
+          artifactFeedName: ${{ parameters.artifactFeedName }}
+          buildPackageName: ${{ parameters.buildPackageName }}
+          packageVersion: ${{ parameters.packageVersion }}
+          downloadDirectory: ${{ parameters.downloadDirectory }}
+          srcAppConfigJsonPath: ${{ parameters.srcAppConfigJsonPath }}
+          destAppConfigJsonDirPath: ${{ parameters.destAppConfigJsonDirPath }}
+          storageAccountName: ${{ parameters.storageAccountName }}
+          srcFilePath: ${{ parameters.srcFilePath }}
+          timeInMinutes: ${{ parameters.timeInMinutes }}
