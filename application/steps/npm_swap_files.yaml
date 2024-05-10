@@ -4,7 +4,6 @@ parameters:
   - name: destAppConfigJsonDirPath
     type: string
 
-
 steps:
   - task: CmdLine@2
     displayName: Swap env files

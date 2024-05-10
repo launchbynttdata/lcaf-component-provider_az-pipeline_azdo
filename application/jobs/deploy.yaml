@@ -25,11 +25,15 @@ parameters:
   - name: timeInMinutes
     type: number
     default: 1
+  - name: deploymentEnv
+    type: string
 
 jobs:
-  - job: DeployApplicationToSandboxEnvironment
-    displayName: 'Deploy Application to sandbox Environment'
+  - job: PreDeploy${{ parameters.deploymentEnv }}Job
+    displayName: '${{ parameters.deploymentEnv }} - Pre deploy'
     pool: ${{ parameters.agentPool }}
+    workspace:
+      clean: all
     steps:
       - ${{ parameters.repoCheckoutSteps }}
 

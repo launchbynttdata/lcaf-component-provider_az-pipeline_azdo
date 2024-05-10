@@ -27,20 +27,23 @@ parameters:
     default: 1       
 
 stages:
-  - stage: DeployAngularApplication
-    displayName: 'Deploy Angular Application'
-    jobs:
-      - template: ../jobs/deploy.yaml
-        parameters:
-          agentPool: ${{ parameters.agentPool }}
-          serviceConnection: ${{ parameters.serviceConnection }}
-          repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
-          artifactFeedName: ${{ parameters.artifactFeedName }}
-          buildPackageName: ${{ parameters.buildPackageName }}
-          packageVersion: ${{ parameters.packageVersion }}
-          downloadDirectory: ${{ parameters.downloadDirectory }}
-          srcAppConfigJsonPath: ${{ parameters.srcAppConfigJsonPath }}
-          destAppConfigJsonDirPath: ${{ parameters.destAppConfigJsonDirPath }}
-          storageAccountName: ${{ parameters.storageAccountName }}
-          srcFilePath: ${{ parameters.srcFilePath }}
-          timeInMinutes: ${{ parameters.timeInMinutes }}
+  - ${{ each deployEnv in parameters.deployEnvironments }}:
+    - stage: ${{ deployEnv.environment}}_PreDeploy
+      displayName: '${{ deployEnv.environment }} - Pre deploy'
+      dependsOn: ${{ deployEnv.dependsOn }}
+      jobs:
+        - template: ../jobs/deploy.yaml
+          parameters:
+            agentPool: ${{ deployEnv.agentPool }}
+            serviceConnection: ${{ deployEnv.serviceConnection }}
+            repoCheckoutSteps: ${{ deployEnv.repoCheckoutSteps }}
+            artifactFeedName: ${{ deployEnv.artifactFeedName }}
+            buildPackageName: ${{ deployEnv.buildPackageName }}
+            packageVersion: ${{ deployEnv.packageVersion }}
+            downloadDirectory: ${{ deployEnv.downloadDirectory }}
+            srcAppConfigJsonPath: ${{ deployEnv.srcAppConfigJsonPath }}
+            destAppConfigJsonDirPath: ${{ deployEnv.destAppConfigJsonDirPath }}
+            storageAccountName: ${{ deployEnv.storageAccountName }}
+            srcFilePath: ${{ deployEnv.srcFilePath }}
+            timeInMinutes: ${{ deployEnv.timeInMinutes }}
+            deploymentEnv: ${{ deployEnv.environment }}

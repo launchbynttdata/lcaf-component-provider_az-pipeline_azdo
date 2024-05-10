@@ -6,7 +6,6 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        echo "dryrun: make configure"
         make configure
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
