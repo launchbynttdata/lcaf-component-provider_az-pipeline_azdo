@@ -1,30 +1,6 @@
-parameters:
-  - name: agentPool
-    type: string
-  - name: serviceConnection
-    type: string
-  - name: repoCheckoutSteps
-    type: stepList
-    default: []
-  - name: artifactFeedName
-    type: string
-  - name: buildPackageName
-    type: string
-  - name: packageVersion
-    type: string    
-  - name: downloadDirectory
-    type: string   
-  - name: srcAppConfigJsonPath
-    type: string
-  - name: destAppConfigJsonDirPath
-    type: string 
-  - name: storageAccountName
-    type: string
-  - name: srcFilePath
-    type: string     
-  - name: timeInMinutes
-    type: number
-    default: 1       
+parameters:    
+  - name: deployEnvironments
+    type: object
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
