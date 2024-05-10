@@ -52,7 +52,8 @@ steps:
       scriptLocation: 'inlineScript'
       inlineScript: |
         set -x
-
+        ls
+        pwd
         if [[ "${{ parameters.imageTag }}" == "None" ]]; then
           imageTag=$(Build.BuildId)
         else
