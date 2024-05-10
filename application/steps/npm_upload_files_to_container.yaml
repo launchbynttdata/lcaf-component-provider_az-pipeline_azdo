@@ -15,4 +15,4 @@ steps:
       scriptType: 'bash'
       scriptLocation: inlineScript
       inlineScript: |
-        az storage azcopy blob upload --container '$web' --account-name  ${{ parameters.storageAccountName }} --source ${{ parameters.srcFilePath }}/* --only-show-errors --recursive
+        az storage azcopy blob upload --container '$web' --account-name ${{ parameters.storageAccountName }} --source ${{ parameters.srcFilePath }} --recursive
