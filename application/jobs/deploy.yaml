@@ -50,9 +50,3 @@ jobs:
           serviceConnection: ${{ parameters.serviceConnection }}
           storageAccountName: ${{ parameters.storageAccountName }}
           srcFilePath: ${{ parameters.srcFilePath }}
-
-      - template: ../steps/npm_delete_old_files_from_container.yaml
-        parameters:
-          serviceConnection: ${{ parameters.serviceConnection }}
-          storageAccountName: ${{ parameters.storageAccountName }}
-          timeInMinutes: ${{ parameters.timeInMinutes }}      
