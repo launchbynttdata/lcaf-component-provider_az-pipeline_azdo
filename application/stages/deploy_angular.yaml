@@ -1,6 +1,9 @@
 parameters:    
   - name: deployEnvironments
     type: object
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
@@ -12,7 +15,7 @@ stages:
           parameters:
             agentPool: ${{ deployEnv.agentPool }}
             serviceConnection: ${{ deployEnv.serviceConnection }}
-            repoCheckoutSteps: ${{ deployEnv.repoCheckoutSteps }}
+            repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
             artifactFeedName: ${{ deployEnv.artifactFeedName }}
             buildPackageName: ${{ deployEnv.buildPackageName }}
             packageVersion: ${{ deployEnv.packageVersion }}
