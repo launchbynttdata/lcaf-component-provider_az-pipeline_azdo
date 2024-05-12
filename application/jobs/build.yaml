@@ -25,7 +25,8 @@ jobs:
     displayName: 'Build Application'
     pool: ${{ parameters.agentPool }}
     steps:
-      - ${{ parameters.repoCheckoutSteps }}
+      - ${{ each step in parameters.repoCheckoutSteps }}:
+        - ${{ step }}
 
       - template: ../../common/steps/launch_make_configure.yml
         parameters:

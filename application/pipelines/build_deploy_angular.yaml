@@ -19,6 +19,9 @@ parameters:
     type: object    
   - name: serviceConnection
     type: object   
+  - name: repoCheckoutSteps
+    type: stepList
+    default: []   
 
 stages:
   - template: ../application/stages/build_angular.yaml@utils
@@ -35,3 +38,4 @@ stages:
   - template: ../application/stages/deploy_angular.yaml@utils
     parameters:
       deployEnvironments: ${{ parameters.deployEnvironments }}
+      repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
