@@ -35,7 +35,8 @@ jobs:
     workspace:
       clean: all
     steps:
-      - ${{ parameters.repoCheckoutSteps }}
+      - ${{ each step in parameters.repoCheckoutSteps }}:
+        - ${{ step }}
 
       - template: ../steps/npm_download_build_artifact.yaml
         parameters:
