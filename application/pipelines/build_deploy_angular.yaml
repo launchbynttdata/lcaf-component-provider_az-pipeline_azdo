@@ -25,9 +25,7 @@ stages:
     parameters:
       agentPool: ${{ parameters.agentPool }}
       serviceConnection: ${{ parameters.serviceConnection }}
-      repoCheckoutSteps:
-        - checkout: self
-          path: main
+      repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
       legacyPeerDeps: ${{ parameters.legacyPeerDeps }}
       packageDirectory: ${{ parameters.packageDirectory }}
       artifactFeedName: ${{ parameters.artifactFeedName }}
