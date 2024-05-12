@@ -24,7 +24,7 @@ parameters:
     default: []   
 
 stages:
-  - template: ../application/stages/build_angular.yaml@utils
+  - template: ../stages/build_angular.yaml@utils
     parameters:
       agentPool: ${{ parameters.agentPool }}
       serviceConnection: ${{ parameters.serviceConnection }}
@@ -35,7 +35,7 @@ stages:
       buildPackageName: ${{ parameters.buildPackageName }}
       packagePublishDescription: ${{ parameters.packagePublishDescription }}
       versionOption: ${{ parameters.versionOption }}
-  - template: ../application/stages/deploy_angular.yaml@utils
+  - template: ../stages/deploy_angular.yaml@utils
     parameters:
       deployEnvironments: ${{ parameters.deployEnvironments }}
       repoCheckoutSteps: ${{ parameters.repoCheckoutSteps }}
