@@ -41,11 +41,28 @@ For referring to other templates inside a template, you can use relative path. F
 ```
 
 ## Variables
-Variables can be defined at different levels in Azure DevOps pipelines.
+Variables can be defined at different levels in Azure DevOps pipelines - root, stage or job level.
+
+Different syntax to define variables 
+- macro syntax `$(var)`: gets processed during `runtime` before a task runs. Runtime happens after template expansion.
+  - if `$(var)` can't be replaced, `$(var)` won't be replaced by anything.
+  - macro syntax can only be used for steps, jobs and stages. Cant be used for resources or triggers.
+  - Macro variables are only expanded when they're used for a value, not as a keyword. Values appear on the right side of a pipeline definition. The following is valid: `key: $(value)`. The following isn't valid: `$(key): value`. 
+- runtime expression `$[variables.var]` : gets processed during runtime
+  - Intended to run with conditions or expressions
+  - Runtime expression variables silently coalesce to empty strings when a replacement value isn't found.
+  - Runtime expression variables are only expanded when they're used for a value, not as a keyword. Values appear on the right side of a pipeline definition. The following is valid: `key: $[variables.value]`. The following isn't valid: `$[variables.key]: value`.
+  - The runtime expression must take up the entire right side of a key-value pair. For example, `key: $[variables.value]` is valid but `key: $[variables.value] foo` isn't.
+- template expression `${{ variables.var }}` gets processed at compile time before runtime starts
+  - Template variables silently coalesce to empty strings when a replacement value isn't found
+  - Template expressions, unlike macro and runtime expressions, can appear as either keys (left side) or values (right side). The following is valid: `${{ variables.key }} : ${{ variables.value }}`
+
+**Note:** When you define the same variable in multiple places with the same name, the most locally scoped variable wins. So, a variable defined at the job level can override a variable set at the stage level. A variable defined at the stage level overrides a variable set at the pipeline root level. A variable set in the pipeline root level overrides a variable set in the Pipeline settings UI.
 
 ### Global Variables
+
 Variables defined at the top of the pipeline are available to all stages and jobs in the pipeline. Remember that these
-variables cannot be overridden in the Azure Devops UI by creating variables with the same name. They can only be changed in the pipeline yaml.
+variables cannot be overridden in the `Azure Devops UI `by creating variables with the same name. They can only be changed in the pipeline yaml.
 
 ### Variables in ADO UI
 You can create variables while editing the pipeline in Azure Devops UI and adding new variables. Those variables can be overridden during each pipeline run.
@@ -54,6 +71,8 @@ Remember if the same variable is defined at the top of the pipeline yaml, then t
 
 ### Pre defined variables
 This is a list of all pre defined variables provided by Azure [predefined variables](https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml)
+
+**Note**: There are a few pre-defined variables that are only available to tasks if defined directly in the pipeline yaml, however not available to the tasks defined in the templates.
 
 ### Set variables in tasks
 

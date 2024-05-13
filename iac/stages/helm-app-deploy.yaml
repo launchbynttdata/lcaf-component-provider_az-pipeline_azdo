@@ -17,6 +17,9 @@ stages:
     - stage: ${{ deployEnv.environment}}_PreDeploy
       displayName: '${{ deployEnv.environment }} - Pre deploy'
       dependsOn: ${{deployEnv.dependsOn}}
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
       jobs:
         - job: PreDeployDevJob
           displayName: '${{ deployEnv.environment }} - Pre deploy'
@@ -52,6 +55,9 @@ stages:
     - stage: ${{ deployEnv.environment }}_Deploy
       displayName: '${{ deployEnv.environment }} - Deploy'
       dependsOn: ${{ deployEnv.environment}}_PreDeploy
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
       jobs:
         - deployment: ${{ deployEnv.environment }}_DeployJob
           displayName: '${{ deployEnv.environment }} Deploy'
