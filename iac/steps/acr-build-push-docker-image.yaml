@@ -13,7 +13,7 @@ parameters:
     default: false
   - name: workingDirectory
     type: string
-    default: $(Pipeline.Workspace)
+    default: $(System.DefaultWorkingDirectory)
 
 steps:
   - task: AzureCLI@2
