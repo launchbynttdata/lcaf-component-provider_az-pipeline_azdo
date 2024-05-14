@@ -66,7 +66,7 @@ stages:
           pool: ${{ parameters.agentPool }}
           workspace:
             clean: all
-          environment: $(azureEnvironment)
+          environment: ${{ variables.azureEnvironment }}
           strategy:
             runOnce:
               deploy:
