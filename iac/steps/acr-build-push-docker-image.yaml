@@ -13,13 +13,14 @@ parameters:
     default: false
   - name: workingDirectory
     type: string
-    default: $(Pipeline.Workspace)
+    default: $(System.DefaultWorkingDirectory)
 
 steps:
   - task: AzureCLI@2
     displayName: 'Build/Push to ACR'
     inputs:
       azureSubscription: ${{ parameters.serviceConnection }}
+      workingDirectory: ${{ parameters.workingDirectory }}
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |

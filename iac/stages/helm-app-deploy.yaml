@@ -1,13 +1,37 @@
+# This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
+# Expect the following variables to be available in the variable file
+# variables: 
+#   - name: serviceConnection
+#     value: 'ado-sp'
+#   - name: agentPool
+#     value: 'container-pool'
+#   - name: aksCluster
+#     value: 'dso-ado-k8s-dev-001-aks'
+#   - name: aksResourceGroup
+#     value: 'dso-k8s-001'
+#   - name: helmChart
+#     value: 'dotnet-app'
+#   - name: helmChartVersion
+#     value: '0.1.0'
+#   - name: helmReleaseName
+#     value: 'sample'
+#   - name: namespace
+#     value: 'dev'
+#   - name: azureEnvironment
+#     value: 'aks-sample-dev'
+
+
 parameters:
 - name: deployEnvironments
   type: object
   default: []
   # Sample deployEnvironments object
-  # - environment: sandbox
-  #   region: eastus
-  #   environmentNumber: "000"
-  #   azureEnvironment: az-env-000
-  #   serviceConnection: $(service_connection_sandbox)
+  # environment: 'test'
+  # dependsOn: 'dev_Deploy'
+  # variableFile: '/envs/test/pipelines/variables.yaml@self'
+  # acrName: ${{ parameters.acrName }}
+  # imageName: ${{ parameters.dockerImageName }}
+  # imageTag: ${{ parameters.imageTag }}
 - name: agentPool
   type: string
   default: ''
@@ -27,31 +51,31 @@ stages:
           workspace:
             clean: all
           steps:
+            - template: ../steps/asdf-install.yaml
+              parameters:
+                pluginName: 'helm-diff'
+                pluginVersion: '3.9.5'
+            - template: ../steps/get-kubernetes-credentials.yaml
+              parameters:
+                serviceConnection: ${{ variables.serviceConnection }}
+                aksResourceGroup: $(aksResourceGroup)
+                aksCluster: $(aksCluster)
+            - template: ../steps/helm-acr-login.yaml
+              parameters:
+                serviceConnection: ${{ variables.serviceConnection }}
+                acrName: ${{ deployEnv.acrName }}
             - template: ../steps/helm-diff.yaml
               parameters:
-                serviceConnection: ${{ deployEnv.serviceConnection }}
-                namespace: ${{ deployEnv.namespace }}
-                releaseName: ${{ deployEnv.releaseName }}
+                serviceConnection: ${{ variables.serviceConnection }}
+                namespace: $(namespace)
+                releaseName: $(helmReleaseName)
                 acrName: ${{ deployEnv.acrName }}
                 imageName: ${{ deployEnv.imageName }}
                 imageTag: ${{ deployEnv.imageTag }}
                 deployEnv: ${{ deployEnv.environment }}
-                helmChart: ${{ deployEnv.helmChart }}
-                helmChartVersion: ${{ deployEnv.helmChartVersion }}
-                additionalSteps:
-                  - template: ../steps/asdf-install.yaml
-                    parameters:
-                      pluginName: 'helm-diff'
-                      pluginVersion: '3.9.5'
-                  - template: ../steps/get-kubernetes-credentials.yaml
-                    parameters:
-                      serviceConnection: ${{ deployEnv.serviceConnection }}
-                      aksResourceGroup: ${{ deployEnv.aksResourceGroup }}
-                      aksCluster: ${{ deployEnv.aksCluster }}
-                  - template: ../steps/helm-acr-login.yaml
-                    parameters:
-                      serviceConnection: ${{ deployEnv.serviceConnection }}
-                      acrName: ${{ deployEnv.acrName }}
+                helmChart: $(helmChart)
+                helmChartVersion: $(helmChartVersion)
+                  
     - stage: ${{ deployEnv.environment }}_Deploy
       displayName: '${{ deployEnv.environment }} - Deploy'
       dependsOn: ${{ deployEnv.environment}}_PreDeploy
@@ -64,32 +88,32 @@ stages:
           pool: ${{ parameters.agentPool }}
           workspace:
             clean: all
-          environment: ${{ deployEnv.azureEnvironment }}
+          environment: ${{ variables.azureEnvironment }}
           strategy:
             runOnce:
               deploy:
                 steps:
                   # Explicit checkout is needed in deploy job
+                  - template: ../steps/verify-ado-agent.yaml
+                  - template: ../steps/get-kubernetes-credentials.yaml
+                    parameters:
+                      serviceConnection: ${{ variables.serviceConnection }}
+                      aksResourceGroup: $(aksResourceGroup)
+                      aksCluster: $(aksCluster)
+                  - template: ../steps/helm-acr-login.yaml
+                    parameters:
+                      serviceConnection: ${{ variables.serviceConnection }}
+                      acrName: ${{ deployEnv.acrName }}
                   - checkout: self
                   - template: ../steps/helm-upgrade.yaml
                     parameters:
-                      serviceConnection: ${{ deployEnv.serviceConnection }}
-                      namespace: ${{ deployEnv.namespace }}
-                      releaseName: ${{ deployEnv.releaseName }}
+                      serviceConnection: ${{ variables.serviceConnection }}
+                      namespace: $(namespace)
+                      releaseName: $(helmReleaseName)
                       acrName: ${{ deployEnv.acrName }}
                       imageName: ${{ deployEnv.imageName }}
                       imageTag: ${{ deployEnv.imageTag }}
                       deployEnv: ${{ deployEnv.environment }}
-                      helmChart: ${{ deployEnv.helmChart }}
-                      helmChartVersion: ${{ deployEnv.helmChartVersion }}
-                      additionalSteps:
-                        - template: ../steps/verify-ado-agent.yaml
-                        - template: ../steps/get-kubernetes-credentials.yaml
-                          parameters:
-                            serviceConnection: ${{ deployEnv.serviceConnection }}
-                            aksResourceGroup: ${{ deployEnv.aksResourceGroup }}
-                            aksCluster: ${{ deployEnv.aksCluster }}
-                        - template: ../steps/helm-acr-login.yaml
-                          parameters:
-                            serviceConnection: ${{ deployEnv.serviceConnection }}
-                            acrName: ${{ deployEnv.acrName }}
+                      helmChart: $(helmChart)
+                      helmChartVersion: $(helmChartVersion)
+                        
