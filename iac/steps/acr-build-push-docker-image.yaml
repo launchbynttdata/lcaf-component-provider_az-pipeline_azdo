@@ -20,6 +20,7 @@ steps:
     displayName: 'Build/Push to ACR'
     inputs:
       azureSubscription: ${{ parameters.serviceConnection }}
+      workingDirectory: ${{ parameters.workingDirectory }}
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
