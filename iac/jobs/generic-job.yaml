@@ -1,0 +1,37 @@
+parameters: 
+  - name: jobName
+    type: string
+    default: false
+  - name: jobDisplayName
+    type: string
+    default: false
+  - name: poolName
+    type: string
+    default: false
+  - name: workspace
+    type: object
+    default:
+      clean: all
+  - name: steps
+    type: stepList
+    default: []
+    - name: timeoutInMinutes
+    type: number
+    default: 60
+  - name: cancelTimeoutInMinutes
+    type: number
+    default: 2
+
+jobs:
+  - job: ${{ parameters.jobName }}
+    displayName: ${{ parameters.jobDisplayName }}
+    pool: ${{ parameters.poolName }}
+    workspace: ${{ parameters.workspace }}
+    # For self hosted agents the default timeoutInMinutes is unlimited, so we need to set it explicitly
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
+    steps:
+      # In deploy job, the code is not checked out by default. So, we need to checkout the code first.
+      - checkout: self
+      - ${{ each step in parameters.steps }}:
+        - ${{ step }}

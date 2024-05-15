@@ -92,6 +92,40 @@ Get variables
 
 Variables can also be set to be used in future jobs and stages. See more details at [User Defined variables](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-variables-scripts?view=azure-devops&tabs=bash)
 
+## Secrets
+One can access the secrets stored in the Azure KeyVault directly in the pipeline steps. Users can use below task to retrieve secrets from the KeyVault
+
+```yaml
+#Secrets will be availabe as variables to the subsequent steps in the job
+- task: AzureKeyVault@1
+  inputs:
+    # Service Connection (Service Principal) must have required access to the KeyVault
+    azureSubscription: 'repo-kv-demo'                    ## YOUR_SERVICE_CONNECTION_NAME
+    KeyVaultName: 'kv-demo-repo'                         ## YOUR_KEY_VAULT_NAME
+    # Accepts comma seperated list of secret names
+    SecretsFilter: 'secretDemo'                          ## YOUR_SECRET_NAME. Default value: *
+    # Runs the task before the job execution begins. Exposes secrets to all tasks in the job, not just tasks that follow this one.
+    RunAsPreJob: false  
+```
+
+Use the secrets in the subsequent steps as below
+
+```yaml
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'run'
+    projects: '**/*.csproj'
+  env:
+    mySecret: $(secretDemo)
+
+- bash: |
+    echo "Secret Found! $MY_MAPPED_ENV_VAR"        
+  env:
+    MY_MAPPED_ENV_VAR: $(mySecret)
+```
+
+
+
 ## Runtime Parameters
 
 ### Parameters in pipelines
