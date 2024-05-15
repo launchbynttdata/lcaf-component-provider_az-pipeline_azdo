@@ -15,7 +15,7 @@ parameters:
   - name: steps
     type: stepList
     default: []
-    - name: timeoutInMinutes
+  - name: timeoutInMinutes
     type: number
     default: 60
   - name: cancelTimeoutInMinutes
