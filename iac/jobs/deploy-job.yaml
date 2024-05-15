@@ -30,7 +30,7 @@ jobs:
     displayName: ${{ parameters.jobDisplayName }}
     pool: ${{ parameters.poolName }}
     workspace: ${{ parameters.workspace }}
-    environtment: ${{ parameters.azureEnvironment }}
+    environment: ${{ parameters.azureEnvironment }}
     # For self hosted agents the default timeoutInMinutes is unlimited, so we need to set it explicitly
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
