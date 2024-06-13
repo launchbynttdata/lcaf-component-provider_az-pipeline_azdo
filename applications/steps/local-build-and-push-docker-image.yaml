@@ -1,0 +1,69 @@
+# This template builds a docker on the local agent and pushes it to the container registry.
+# parameters:
+#   - name: dockerImageName - (required) The name of the docker image. This is also the name of the repository in the container registry.
+#   - name: dockerImageTag - (required) The tag(s) of the docker image.
+#   - name: acrRegistry - (required) The FQDN of the container registry.
+#   - name: serviceConnection - (required) The ADO service connection to use to login to the container registry.
+#   - name: distPath - The directory containing the build artifacts. Default is 'dist/'
+#   - name: dockerfile - The path to the Dockerfile. Default is 'Dockerfile'
+
+
+parameters:
+  - name: dockerImageName
+    type: string
+  - name: dockerImageTag
+    type: string
+  - name: acrRegistry
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: distPath
+    type: string
+    default: 'dist/'
+  - name: dockerfile
+    type: string
+    default: 'Dockerfile'
+
+steps:
+  - task: AzureCLI@2
+    displayName: 'Login to container registry'
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        export ACRNAME=${ACRFQDN%%.*}
+        export ACRSUFFIX=${ACRFQDN#*.}
+        az acr login --name ${ACRNAME} --suffix ${ACRSUFFIX}
+    env:
+      ACRFQDN: ${{ parameters.acrRegistry }}
+
+  - task: Docker@2
+    displayName: Build an image
+    enabled: true
+    inputs:
+      repository: ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}
+      command: build
+      Dockerfile: ${{ parameters.dockerfile }}
+      arguments: --build-arg FEED_ACCESSTOKEN=$(System.Accesstoken)
+      tags: ${{ parameters.dockerImageTag }}
+
+  - task: AzureCLI@2
+    displayName: 'Push image to repo'
+    inputs:
+      azureSubscription:  ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        while IFS= read -r tag; do
+          docker push ${ACR_REGISTRY}/${DOCKER_IMAGE_NAME}:$tag
+        done <<< $IMAGE_TAGS
+    env:
+      IMAGE_TAGS: ${{ parameters.dockerImageTag }}
+      ACR_REGISTRY: ${{ parameters.acrRegistry }}
+      DOCKER_IMAGE_NAME: ${{ parameters.dockerImageName }}
+
+
+
+
+

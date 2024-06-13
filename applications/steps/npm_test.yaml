@@ -1,0 +1,47 @@
+### This template will run the unit tests and generate the code coverage report.
+# # parameters:
+#  - name: testCommand - The command to run the tests. Default is 'npm run test'
+#  - name: coverageReportPath - The path to the coverage report. Default is 'coverage'
+#  - name: coverageReportType - The type of coverage report. Default is 'cobertura'
+#  - name: certPath - The path to the certificate file. Default is false, which means no certificate is used.
+
+## This template assumes that the app has already been built and the node modules have been installed in the same job.
+
+parameters:
+  - name: testCommand
+    type: string
+    default: 'npm run test'
+  - name: coverageReportPath
+    type: string
+    default: 'coverage'
+  - name: coverageReportType
+    type: string
+    default: 'cobertura'
+  - name: certPath
+    type: string
+    default: 'false'
+
+steps:
+  - task: Bash@3
+    displayName: 'Run unit tests'
+    inputs:
+      targetType: inline
+      script: ${{ parameters.testCommand }}
+    env:
+      NOOP: noop
+      ${{ if ne(parameters.certPath, 'false') }}:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+
+  - ${{ if eq( parameters.coverageReportType, 'cobertura') }}:
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish code coverage results'
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: ${{ parameters.coverageReportPath }}/coverage-summary.json
+        reportDirectory: ${{ parameters.coverageReportPath }}
+      env:
+        NOOP: noop
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

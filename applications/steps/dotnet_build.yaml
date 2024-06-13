@@ -1,0 +1,45 @@
+# This template will build a dotnet applcation.
+
+# parameters:
+#  - name: solutionPath - The path to the solution file. Default is '**/*.sln'
+#  - name: certPath - The path to the certificate file. Default is false, which means no certificate is used.
+#  - name: command - the command to send to the dotnet build step. Default is 'build'
+#  - name: authCustomNugetFeed - If true, the template will attempt to authenticate to a pre-configured nuget feed.
+#  - name: buildConfiguration - The build configuration to use. Default is 'Release'
+
+parameters:
+  - name: solutionPath
+    type: string
+    default: '**/*.sln'
+  - name: certPath
+    type: string
+    default: 'false'
+  - name: command
+    type: string
+    default: 'build'
+  - name: authCustomNugetFeed
+    type: boolean
+    default: false
+  - name: buildConfiguration
+    type: string
+    default: 'Release'
+
+steps:
+ 
+  - ${{ if parameters.authCustomNugetFeed }}:
+    - template: /applications/steps/nuget_auth_to_repo.yaml
+      parameters:
+        certPath: ${{ parameters.certPath }}
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Run dotnet build'
+      enabled: true
+      inputs:
+        command: ${{ parameters.command }}
+        projects: ${{ parameters.solutionPath }}
+        arguments: '--configuration ${{ parameters.buildConfiguration }}'
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
