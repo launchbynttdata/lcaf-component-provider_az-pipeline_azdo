@@ -1,0 +1,21 @@
+## Authenticate to npm registry
+# This template will attempt to authenticate to any npm registry configured in the .npmrc file. It will also set the SSL_CERT_FILE and NODE_EXTRA_CA_CERTS environment variables if a certificate path is provided.
+#
+# parameters:
+#   - name: certPath  (optional) The path to the certificate file. Default is false, which means no certificate is used.
+
+
+parameters: 
+  - name: certPath
+    type: string
+    default: 'false'
+
+steps:
+  - task: npmAuthenticate@0
+    displayName: "Authenticate to npm registry"
+    inputs:
+      workingFile: .npmrc
+    ${{ if ne(parameters.certPath, 'false') }}:
+      env:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

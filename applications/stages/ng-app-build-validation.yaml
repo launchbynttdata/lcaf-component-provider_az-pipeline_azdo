@@ -1,0 +1,73 @@
+# This template will do an in-place build of the Angular application. It will also run the unit tests and generate the code coverage report.
+# parameters:
+#  base64Cert: The base64 encoded full chain certificate to be decoded and saved to a file
+#  buildContainer: (optional) fully-qualified path to the container image that will be used to build the Angular application
+#  buildContainerTag: (optional, latest if empty and buildContainer is not null) tag of the container image that will be used to build the Angular application
+#  poolName: The name of the ADO Agent pool to run the job on.
+#  nodeVersionSpec: The version of Node.js to install. Default is 18.x
+#  authCustomNpmRegistry: (optional) If true, the npm registry will be set to the custom registry
+#  runTests: (optional) If true, the unit tests will be run. Default is true.
+
+parameters:
+  - name: base64Cert
+    type: string
+    default: 'false'
+  - name: buildContainer
+    type: string
+    default: ''
+  - name: buildContainerTag
+    type: string
+    default: ''
+  - name: poolName
+    type: string
+  - name: nodeVersionSpec
+    type: string
+    default: 'false'
+  - name: authCustomNpmRegistry
+    type: boolean
+    default: false
+  - name: runTests
+    type: boolean
+    default: true
+
+stages:
+  - stage: build_validation
+    displayName: Build Validation
+    jobs:
+      - template: /common/jobs/generic-job.yaml
+        parameters:
+          jobName: BuildValidation
+          jobDisplayName: Build Validation
+          poolName: ${{ parameters.poolName }}
+          ${{ if ne(parameters.buildContainer, '') }}:
+            container: ${{ parameters.buildContainer }}:${{ coalesce(parameters.buildContainerTag, 'latest') }}
+          workspace:
+            clean: all
+          steps:
+            - template: /common/steps/asdf-install-tools.yaml
+              parameters:
+                toolVersionsFile: '.tool-versions'
+
+            - ${{ if ne(parameters.base64Cert, 'false') }}:
+              - template: /common/steps/decode_b64_cert.yaml
+                parameters:
+                  base64Cert: ${{ parameters.base64Cert }}
+                  certPath: $(Agent.ToolsDirectory)/custom.crt
+
+            - template: /applications/steps/npm_install_build.yaml
+              parameters:
+                ${{ if ne(parameters.base64Cert, 'false') }}:
+                  certPath: $(Agent.ToolsDirectory)/custom.crt
+                authCustomNpmRegistry: ${{ parameters.authCustomNpmRegistry }}
+                command: |
+                  npm install
+                  npm run build
+
+            - ${{ if parameters.runTests }}:
+              - template: /applications/steps/npm_test.yaml
+                parameters:
+                  testCommand: 'npm run test'
+                  coverageReportPath: 'coverage'
+                  coverageReportType: 'cobertura'
+                  ${{ if ne(parameters.base64Cert, 'false') }}:
+                    certPath: $(Agent.ToolsDirectory)/custom.crt

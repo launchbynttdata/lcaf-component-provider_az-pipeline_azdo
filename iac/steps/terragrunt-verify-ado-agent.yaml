@@ -1,0 +1,19 @@
+steps:
+  - task: Bash@3
+    displayName: 'Verify Agent for Terragrunt'
+    inputs:
+      targetType: 'inline'
+      script: |
+        set -x
+
+        echo -e "Current working directory: $(pwd)"
+        echo -e "Logged In user: $(whoami)"
+        echo -e "List of files in the current directory: \n$(ls -l)"
+        echo -e "Environment Variables: \n$(env)"
+
+        type jq || exit 1
+        type asdf || exit 1
+
+        echo "Installing ASDF"
+        asdf install
+        echo -e "Terragrunt version: $(terragrunt -version)"

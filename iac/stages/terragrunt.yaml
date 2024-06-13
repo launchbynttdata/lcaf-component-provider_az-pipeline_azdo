@@ -1,0 +1,61 @@
+# This template assumes there are 2 repositories: the main repository and the utils repository.
+# The utils repository contains common bash functions and ADO pipeline templates.
+# The main repository contains the codebase for the application
+
+parameters:
+- name: deployEnvironments
+  type: object
+  default: []
+- name: userSteps
+  type: stepList
+  default: []
+- name: pool
+  type: string
+  default: false
+- name: repoCheckoutSteps
+  type: stepList
+  default: []
+
+stages:
+  - ${{ each deployEnv in parameters.deployEnvironments }}:
+      - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_pre_deploy
+        displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre Deploy'
+        dependsOn: ${{ deployEnv.dependsOn }}
+        jobs:
+          - job: ${{ deployEnv.environment }}_TerraformInitPlan
+            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terraform Init and Plan'
+            pool: ${{ parameters.pool }}
+            workspace:
+              clean: all
+            steps:
+              - ${{ each step in parameters.repoCheckoutSteps }}:
+                - ${{ step }}
+              - template: ../../common/steps/verify-ado-agent.yaml
+              - template: ../steps/terragrunt-plan.yaml
+                parameters:
+                  serviceConnection: ${{ deployEnv.serviceConnection }}
+                  environment: ${{ deployEnv.environment }}
+                  region: ${{ deployEnv.region }}
+                  environmentNumber: ${{ deployEnv.environmentNumber }}
+                  workingDirectory: "$(Pipeline.Workspace)/main"
+      - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy
+        displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
+        dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_pre_deploy
+        jobs:
+          - deployment: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy'
+            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terragrunt Apply'
+            pool: ${{ parameters.pool }}
+            environment: ${{ deployEnv.azureEnvironment }}
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - ${{ each step in parameters.repoCheckoutSteps }}:
+                      - ${{ step }}
+                    - template: ../steps/terragrunt-apply.yaml
+                      parameters:
+                        serviceConnection: ${{ deployEnv.serviceConnection }}
+                        environment: ${{ deployEnv.environment }}
+                        region: ${{ deployEnv.region }}
+                        environmentNumber: ${{ deployEnv.environmentNumber }}
+                        workingDirectory: "$(Pipeline.Workspace)/main"

@@ -1,0 +1,15 @@
+# This template installs all plugins and tools from the .tool-versions file
+
+parameters:
+  - name: toolVersionsFile
+    type: string
+    default: '.tool-versions'
+
+steps:
+  - task: Bash@3
+    displayName: "ASDF Install all plugins and tools from ${{ parameters.toolVersionsFile }}"
+    inputs:
+      targetType: 'inline'
+      script: |
+        awk -F'[ #]' '$NF ~ /https/ {system("asdf plugin add " $1 " " $NF)} $1 ~ /./ {system("asdf plugin add " $1 "; asdf install " $1 " " $2 )}' ${{ parameters.toolVersionsFile }}
+        asdf reshim

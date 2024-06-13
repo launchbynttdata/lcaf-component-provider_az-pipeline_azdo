@@ -1,0 +1,15 @@
+parameters:
+  - name: vmImageNameMSFTHosted
+    type: string
+  - name: serviceConnection
+    type: string
+
+jobs:
+  - job: PullRequestMerged
+    displayName: Pull Request Merged
+    pool:
+      vmImage: ${{ parameters.vmImageNameMSFTHosted }}
+    steps:
+      - template: ../steps/launch_make_apply.yaml
+        parameters:
+          serviceConnection: ${{ parameters.serviceConnection }}
