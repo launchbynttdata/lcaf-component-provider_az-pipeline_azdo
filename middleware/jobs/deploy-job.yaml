@@ -1,0 +1,43 @@
+parameters: 
+  - name: jobName
+    type: string
+    default: false
+  - name: jobDisplayName
+    type: string
+    default: false
+  - name: poolName
+    type: string
+    default: false
+  - name: workspace
+    type: object
+    default:
+      clean: all
+  - name: azureEnvironment
+    type: string
+    default: false
+  - name: steps
+    type: stepList
+    default: []
+  - name: timeoutInMinutes
+    type: number
+    default: 60
+  - name: cancelTimeoutInMinutes
+    type: number
+    default: 2
+
+jobs:
+  - deployment: ${{ parameters.jobName }}
+    displayName: ${{ parameters.jobDisplayName }}
+    pool: ${{ parameters.poolName }}
+    workspace: ${{ parameters.workspace }}
+    environment: ${{ parameters.azureEnvironment }}
+    # For self hosted agents the default timeoutInMinutes is unlimited, so we need to set it explicitly
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - ${{ each step in parameters.steps }}:
+              - ${{ step }}

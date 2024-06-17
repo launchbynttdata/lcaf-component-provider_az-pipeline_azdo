@@ -1,0 +1,21 @@
+parameters:
+  - name: serviceConnection
+    type: string
+    default: false
+  # map of helm chart repo names to URLs
+  - name: helmRepos
+    type: object
+    default: {}
+
+steps:
+  - ${{ each repo in parameters.helmRepos }}:
+    - task: AzureCLI@2
+      displayName: helm repo add ${{ repo.Key }}
+      env:
+        KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
+      inputs:
+        azureSubscription: ${{ parameters.serviceConnection }}
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          helm repo add ${{ repo.Key }} ${{ repo.Value }}
