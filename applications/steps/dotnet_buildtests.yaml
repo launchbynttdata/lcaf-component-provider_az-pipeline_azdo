@@ -11,6 +11,9 @@ parameters:
   - name: authCustomNugetFeed
     type: boolean
     default: false
+  - name: buildConfiguration
+    type: string
+    default: 'Release'
 
 
 steps:
@@ -19,16 +22,24 @@ steps:
     - template: /applications/steps/nuget_auth_to_repo.yaml
       parameters:
         certPath: ${{ parameters.certPath }}
-
+      
     - task: DotNetCoreCLI@2
-      displayName: 'Run dotnet format'
+      displayName: 'Run tests'
       enabled: true
       inputs:
-        command: custom
-        custom: 'format'
-        arguments:  '--verify-no-changes --verbosity diagnostic'
+        command: test
+        projects: '**/*Tests.csproj'
+        publishTestResults: true
+        arguments: '--configuration $(buildConfiguration) --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura'
       env:
         NOOP: noop 
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+    
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish code coverage results'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+        reportDirectory: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
