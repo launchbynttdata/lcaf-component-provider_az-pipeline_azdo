@@ -23,6 +23,9 @@ parameters:
   - name: authCustomNpmRegistry
     type: boolean
     default: false
+  - name: runFormat
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -58,9 +61,16 @@ stages:
                 command: 'build'
                 authCustomNugetFeed: true
                 buildConfiguration: 'Release'
+            
+            - ${{ if eq(parameters.runFormat, true) }}:
+              - template: /applications/steps/dotnet_format.yaml
+                parameters:
+                  certPath: $(Agent.ToolsDirectory)/custom.crt
+                  authCustomNugetFeed: true
 
             - ${{ if eq(parameters.runTests, true) }}:
               - template: /applications/steps/dotnet_buildtests.yaml
                 parameters:
                   certPath: $(Agent.ToolsDirectory)/custom.crt
                   authCustomNugetFeed: true
+                  buildConfiguration: 'Release'
