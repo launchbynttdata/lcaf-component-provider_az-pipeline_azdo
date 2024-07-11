@@ -1,0 +1,23 @@
+# This template retrieves key-vault secrets. The secrets must be set as env vars in the subsequent tasks to use them
+# secretsFilter is a comma separated name of secrets to fetch from keyVault
+# runAsPreJob:true enables the secrets to be available to the entire job not just the subsequent step
+
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: keyVaultName
+    type: string
+  - name: secretsFilter
+    type: string
+  - name: runAsPreJob
+    type: boolean
+    default: true
+
+steps:
+  - task: AzureKeyVault@1
+    displayName: 'Fetch Key-vault secrets'
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      KeyVaultName: ${{ parameters.keyVaultName }}
+      SecretsFilter: ${{ parameters.secretsFilter }}
+      RunAsPreJob: ${{ parameters.runAsPreJob }}

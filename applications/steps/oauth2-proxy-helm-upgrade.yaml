@@ -1,0 +1,81 @@
+# This template will install/upgrade the helm chart for ouath2-proxy. It will fetch the oauth-provider credentials from the keyvault
+# Any variables refererred in this file and not defined here must be either defined in the job, stage, pipeline or variable template files in the app repo.
+# For example keyVaultName, OAUTH2_ADFS_CLIENT_ID are defined in the variables template file in app repo and included in the stage template applications/stages/oauth2-proxy-helm-deploy.yaml
+
+parameters:
+  - name: enabled
+    type: boolean
+    default: true
+  - name: serviceConnection
+    type: string
+    default: false
+  - name: namespace
+    type: string
+    default: false
+  - name: releaseName
+    type: string
+    default: false
+  - name: deployEnv
+    type: string
+    default: false
+  - name: helmChartRepoUrl
+    type: string
+    default: false
+  - name: helmChart
+    type: string
+    default: false
+  - name: helmChartVersion
+    type: string
+    default: false
+  - name: additionalSteps
+    type: stepList
+    default: []
+  # If there are multiple repos checked out, then this should change to say $(Pipeline.Workspace)/main. main being the name of the repo
+  - name: workingDirectory
+    type: string
+    default: $(Pipeline.Workspace)/s
+  # Helm override values file to be passed in with helm upgrade command
+  - name: overrideValuesFile
+    type: string
+    default: false
+
+steps:
+  - ${{ each step in parameters.additionalSteps }}:
+    - ${{ step }}
+  - task: AzureCLI@2
+    enabled: ${{ parameters.enabled }}
+    displayName: Helm Upgrade
+    env:
+      KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      workingDirectory: ${{ parameters.workingDirectory }}
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        # Check if namespace exists
+        if kubectl get namespace ${{ parameters.namespace }} >/dev/null 2>&1; then
+          echo "Namespace $namespace already exists"
+        else
+          echo "Creating namespace ${{ parameters.namespace }}"
+          kubectl create namespace ${{ parameters.namespace }}
+        fi
+
+        echo -e "Adding helm repo: ${{ parameters.helmChart }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
+
+        helm repo add ${{ parameters.helmChart }} ${{ parameters.helmChartRepoUrl }}
+        helm repo update
+
+        echo -e "Extracting the secrets from key-vault\n"
+
+        client_id=$(az keyvault secret show --vault-name $(keyVaultName) --name $(OAUTH2_ADFS_CLIENT_ID) --query value -o tsv)
+        client_secret=$(az keyvault secret show --vault-name $(keyVaultName) --name $(OAUTH2_ADFS_CLIENT_SECRET) --query value -o tsv)
+        cookie_secret=$(az keyvault secret show --vault-name $(keyVaultName) --name $(OAUTH2_COOKIE_SECRET) --query value -o tsv)
+
+        echo -e "Performing helm upgrade.\n"
+
+        helm upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmChart }}/${{ parameters.helmChart }} \
+           -n ${{ parameters.namespace }} -f ${{ parameters.overrideValuesFile }} \
+           --set config.clientID=$client_id --set config.clientSecret=$client_secret --set config.cookieSecret=$cookie_secret \
+           --wait --force
+
