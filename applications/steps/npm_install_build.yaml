@@ -20,6 +20,9 @@ parameters:
   - name: authCustomNpmRegistry
     type: boolean
     default: false
+  - name: auditResultsPath
+    type: string
+    default: '$(Build.Repository.Name)-audit.json'
 
 steps:
   - task: NodeTool@0
@@ -39,6 +42,29 @@ steps:
     inputs:
       targetType: inline
       script: ${{ parameters.command }}
+    ${{ if ne(parameters.certPath, 'false') }}:
+      env:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+  
+  - task: Bash@3
+    displayName: 'Run npm audit'
+    inputs:
+      targetType: inline
+      script: | 
+        npm audit --json 2>&1 | tee ${{ parameters.auditResultsPath }}
+    ${{ if ne(parameters.certPath, 'false') }}:
+      env:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+  
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish npm audit results'
+    enabled: true
+    inputs:
+      PathtoPublish: ${{ parameters.auditResultsPath }}
+      ArtifactName: 'NpmPackageAudit'
+      publishLocation: 'Container'
     ${{ if ne(parameters.certPath, 'false') }}:
       env:
         SSL_CERT_FILE: ${{ parameters.certPath }}
