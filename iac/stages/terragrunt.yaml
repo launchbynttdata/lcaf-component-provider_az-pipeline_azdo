@@ -1,6 +1,27 @@
-# This template assumes there are 2 repositories: the main repository and the utils repository.
-# The utils repository contains common bash functions and ADO pipeline templates.
-# The main repository contains the codebase for the application
+# This template is used to run a terragrunt pipeline to deploy infrastructure in Azure. Each environment has 2 stages
+# - Pre Deploy: This stage will run terragrunt init and plan
+# - Deploy: This stage will run terragrunt apply
+
+# Below is an example usage of this template
+
+# - template: /iac/stages/terragrunt.yaml@utils
+#     parameters:
+#       deployEnvironments:
+#         - environment: dev
+#           region: eastus
+#           environmentNumber: "000"
+#           azureEnvironment: tg-aks-dev-eastus-000
+#           serviceConnection: $(service_connection_dev)
+#           agentPool: 'dev-aks-pool'
+#         - environment: test
+#           region: eastus
+#           environmentNumber: "000"
+#           azureEnvironment: tg-aks-test-eastus-000
+#           serviceConnection: $(service_connection_test)
+#           agentPool: 'test-aks-pool'
+#           # User needs to check the terragrunt.yaml@utils repo to find out how the stages are named to be passed in dependsOn
+#           dependsOn:
+#             - dev_eastus_000_deploy
 
 parameters:
 - name: deployEnvironments
@@ -12,9 +33,6 @@ parameters:
 - name: pool
   type: string
   default: false
-- name: repoCheckoutSteps
-  type: stepList
-  default: []
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
@@ -22,40 +40,46 @@ stages:
         displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre Deploy'
         dependsOn: ${{ deployEnv.dependsOn }}
         jobs:
-          - job: ${{ deployEnv.environment }}_TerraformInitPlan
-            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terraform Init and Plan'
-            pool: ${{ parameters.pool }}
-            workspace:
-              clean: all
-            steps:
-              - ${{ each step in parameters.repoCheckoutSteps }}:
-                - ${{ step }}
-              - template: ../../common/steps/verify-ado-agent.yaml
-              - template: ../steps/terragrunt-plan.yaml
-                parameters:
-                  serviceConnection: ${{ deployEnv.serviceConnection }}
-                  environment: ${{ deployEnv.environment }}
-                  region: ${{ deployEnv.region }}
-                  environmentNumber: ${{ deployEnv.environmentNumber }}
-                  workingDirectory: "$(Pipeline.Workspace)/main"
+          - template: ../../common/jobs/generic-job.yaml
+            parameters:
+              jobName: ${{ deployEnv.environment }}_TerraformInitPlan
+              jobDisplayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terraform Init and Plan'
+              poolName: ${{ deployEnv.agentPool }}
+              workspace:
+                clean: all
+              steps:
+                - template: ../../common/steps/verify-ado-agent.yaml
+                - template: ../../common/steps/asdf-install.yaml
+                  parameters:
+                    pluginName: 'terragrunt'
+                    pluginVersion: '0.54.11'
+                - template: ../steps/terragrunt-plan.yaml
+                  parameters:
+                    serviceConnection: ${{ deployEnv.serviceConnection }}
+                    environment: ${{ deployEnv.environment }}
+                    region: ${{ deployEnv.region }}
+                    environmentNumber: ${{ deployEnv.environmentNumber }}
       - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy
         displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
         dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_pre_deploy
+        condition: false
         jobs:
-          - deployment: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy'
-            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terragrunt Apply'
-            pool: ${{ parameters.pool }}
-            environment: ${{ deployEnv.azureEnvironment }}
-            strategy:
-              runOnce:
-                deploy:
-                  steps:
-                    - ${{ each step in parameters.repoCheckoutSteps }}:
-                      - ${{ step }}
-                    - template: ../steps/terragrunt-apply.yaml
-                      parameters:
-                        serviceConnection: ${{ deployEnv.serviceConnection }}
-                        environment: ${{ deployEnv.environment }}
-                        region: ${{ deployEnv.region }}
-                        environmentNumber: ${{ deployEnv.environmentNumber }}
-                        workingDirectory: "$(Pipeline.Workspace)/main"
+          - template: ../../common/jobs/deploy-job.yaml
+            parameters:
+              jobName: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy'
+              jobDisplayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terragrunt Apply'
+              poolName: ${{ deployEnv.agentPool }}
+              workspace:
+                clean: all
+              azureEnvironment: ${{ deployEnv.azureEnvironment }}
+              steps:
+                - template: ../../common/steps/asdf-install.yaml
+                  parameters:
+                      pluginName: 'terragrunt'
+                      pluginVersion: '0.54.11'
+                - template: ../steps/terragrunt-apply.yaml
+                  parameters:
+                    serviceConnection: ${{ deployEnv.serviceConnection }}
+                    environment: ${{ deployEnv.environment }}
+                    region: ${{ deployEnv.region }}
+                    environmentNumber: ${{ deployEnv.environmentNumber }}

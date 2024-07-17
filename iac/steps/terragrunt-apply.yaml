@@ -15,7 +15,7 @@ parameters:
   # needs to override that to the main repository for terragrunt run
   - name: workingDirectory
     type: string
-    default: "$(Pipeline.Workspace)/main"
+    default: "$(Pipeline.Workspace)/s"
 
 steps:
   - task: AzureCLI@2
@@ -29,6 +29,7 @@ steps:
       inlineScript: |
         set -x
 
+        export ARM_ENVIRONMENT=usgovernment
         export ARM_CLIENT_ID=$servicePrincipalId
         export ARM_CLIENT_SECRET=$servicePrincipalKey
         export ARM_TENANT_ID=$tenantId
