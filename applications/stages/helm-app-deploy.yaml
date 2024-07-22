@@ -113,5 +113,7 @@ stages:
                   deployEnv: ${{ deployEnv.environment }}
                   helmChart: $(helmChart)
                   helmChartVersion: $(helmChartVersion)
+                  ${{ if variables.helmTimeoutDuration }}:
+                    helmTimeoutDuration: ${{ variables.helmTimeoutDuration }}
         
                         
