@@ -1,0 +1,102 @@
+# This template will display the helm diff for the helm deployment of linkerd service mesh. It will fetch the trust anchor and issuer certificates from the key-vault (stored as secrets). 
+# The output may be empty when no differences are found
+# Any variables refererred in this file and not defined here must be either defined in the job, stage, pipeline or variable template files in the app repo.
+# For example keyVaultName, trust_anchor_cert are defined in the variables template file in app repo and included in the stage template applications/stages/linkerd-helm-deploy.yaml
+
+parameters:
+  - name: enabled
+    type: boolean
+    default: true
+  - name: serviceConnection
+    type: string
+    default: false
+  - name: namespace
+    type: string
+    default: false
+  - name: releaseName
+    type: string
+    default: false
+  - name: deployEnv
+    type: string
+    default: false
+  - name: helmChartRepoUrl
+    type: string
+    default: false
+  - name: linkerdHelmChartName
+    type: string
+    default: "linkerd-control-plane"
+  - name: linkerdCrdsHelmChartName
+    type: string
+    default: "linkerd-crds"
+  - name: linkerdHelmChartVersion
+    type: string
+    default: false
+  - name: linkerdCrdsHelmChartVersion
+    type: string
+    default: false
+  - name: additionalSteps
+    type: stepList
+    default: []
+  # If there are multiple repos checked out, then this should change to say $(Pipeline.Workspace)/main. main being the name of the repo
+  - name: workingDirectory
+    type: string
+    default: $(Pipeline.Workspace)/s
+  # Helm override values file to be passed in with helm upgrade command
+  - name: overrideValuesFile
+    type: string
+    default: false
+
+steps:
+  - ${{ each step in parameters.additionalSteps }}:
+    - ${{ step }}
+  - task: AzureCLI@2
+    enabled: ${{ parameters.enabled }}
+    displayName: Helm Diff
+    env:
+      KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      workingDirectory: ${{ parameters.workingDirectory }}
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+
+        # Check if namespace exists
+        if kubectl get namespace ${{ parameters.namespace }} >/dev/null 2>&1; then
+          echo "Namespace $namespace already exists"
+        else
+          echo "Creating namespace ${{ parameters.namespace }}"
+          kubectl create namespace ${{ parameters.namespace }}
+        fi
+
+        echo -e "Adding helm repo: linkerd ${{ parameters.helmChartRepoUrl }} and updating...\n"
+        helm repo add linkerd ${{ parameters.helmChartRepoUrl }}
+        helm repo update
+
+        echo -e "Performing Helm diff operation for  Linkerd CRDs. You may see no output when there are no differences..\n"
+        helm diff upgrade linkerd-crds linkerd/${{ parameters.linkerdCrdsHelmChartName }} \
+          -n ${{ parameters.namespace }} --allow-unreleased
+
+        echo -e "Extracting the secrets for Trust Anchor and Issuer certs from key-vault: $(keyVaultName)\n"
+
+        az keyvault secret show --vault-name $(keyVaultName) --name $(LINKERD_TRUST_ANCHOR_CERT_SECRET_NAME) --query value -o tsv > trust_anchor_cert.pem
+        az keyvault secret show --vault-name $(keyVaultName) --name $(LINKERD_ISSUER_PRIVATE_KEY_SECRET_NAME) --query value -o tsv > issuer_private_key.pem
+        az keyvault secret show --vault-name $(keyVaultName) --name $(LINKERD_ISSUER_CERT_SECRET_NAME) --query value -o tsv > issuer_cert.pem
+
+        command="helm diff upgrade --install ${{ parameters.releaseName }} linkerd/${{ parameters.linkerdHelmChartName }} \
+          -n ${{ parameters.namespace }} --allow-unreleased \
+          --set-file identityTrustAnchorsPEM=./trust_anchor_cert.pem \
+          --set-file identity.issuer.tls.crtPEM=./issuer_cert.pem \
+          --set-file identity.issuer.tls.keyPEM=./issuer_private_key.pem"
+
+        echo -e "Helm values file: ${{ parameters.overrideValuesFile }}"
+
+        if [[ -n "${{ parameters.overrideValuesFile }}" ]]; then
+          command+=" -f ${{ parameters.overrideValuesFile }}"
+        fi
+
+        echo -e "Below command will be executed:\n\n${command}"
+
+        echo -e "Performing helm diff operation for Linkerd upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
+
+        eval ${command}
