@@ -1,4 +1,4 @@
-# This template is a multistage template to deploy oauth2-proxy on AKS cluster
+# This template is a multistage template to deploy Linkerd Service Mesh control plane on AKS cluster
 
 # This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
 # Expect the following variables to be available in the variable file
@@ -11,29 +11,33 @@
 #     value: 'trp-appsk8s-dev-000-aks'
 #   - name: aksResourceGroup
 #     value: 'trp-appsk8s-govva-dev-000-rg-000'
-#   - name: helmChart
-#     value: 'oauth2-proxy'
 #   - name: helmChartRepoUrl
-#     value: 'https://oauth2-proxy.github.io/manifests'
-#   - name: helmChartVersion
-#     value: '7.7.8'
+#     value: 'https://helm.linkerd.io/stable'
+#   - name: linkerdHelmChartName
+#     value: 'linkerd-control-plane'
+#   - name: linkerdHelmChartVersion
+#     value: '1.16.11'
+#   - name: linkerdCrdsHelmChartName
+#     value: 'linkerd-crds'
+#   - name: linkerdCrdsHelmChartVersion
+#     value: '1.8.0'
 #   - name: helmReleaseName
-#     value: 'sample-oauth2-proxy'
+#     value: 'linkerd-control-plane'
 #   - name: namespace
-#     value: 'dev'
+#     value: 'linkerd'
 #   - name: azureEnvironment
-#     value: 'aks-sample-oauth2-dev'
+#     value: 'trp-appsk8s_linkerd-dev-000-aks'
 #   - name: deployEnvironment
 #     value: 'dev'
 #   - name: keyVaultName
 #     value: 'trp-dev-vault'
 #   # The below secret mappings must exist in the variables file. The key must always be the same. The value refers to the secret name in key vault
-#   - name: OAUTH2_ADFS_CLIENT_ID
-#     value: 'dslu-oauth2-adfs-client-id'
-#   - name: OAUTH2_ADFS_CLIENT_SECRET
-#     value: 'dslu-oauth2-adfs-client-secret'
-#   - name: OAUTH2_COOKIE_SECRET
-#     value: 'dslu-oauth2-cookie-secret'
+#   - name: LINKERD_TRUST_ANCHOR_CERT_SECRET_NAME
+#     value: 'linkerd-trust-anchor-cert'
+#   - name: LINKERD_ISSUER_PRIVATE_KEY_SECRET_NAME
+#     value: 'linkerd-issuer-private-key'
+#   - name: LINKERD_ISSUER_CERT_SECRET_NAME
+#     value: 'linkerd-issuer-cert'
 
 
 parameters:
@@ -41,16 +45,19 @@ parameters:
   type: object
   default: []
   # Sample deployEnvironments object
-  # environment: 'test'
-  # dependsOn: 'dev_Deploy' # Must be empty for the first stage
-  # variableFile: '/envs/test/pipelines/variables.yaml@self'
+  # environment: 'dev'
+  # region: usgovvirginia
+  # environmentNumber: 000
+  # azureEnvironment: trp-appsk8s_linkerd-dev-000-aks
+  # dependsOn: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy' # Must be empty for the first stage
+  # variableFile: '/middlewares/env/dev/linkerd/pipeline-variables.yaml@self'
   # aksAdEnabled: false
-  # overrideValuesFile: 'envs/dev/oauth2/values.yaml'
+  # overrideValuesFile: 'middlewares/env/dev/linkerd/helm-values.yaml' (optional)
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
-    - stage: ${{ deployEnv.environment}}_PreDeploy
-      displayName: '${{ deployEnv.environment }} - Pre deploy'
+    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
+      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre deploy'
       dependsOn: ${{deployEnv.dependsOn}}
       # Most of the variables used later in the file to pass values to parameters come from this variable file
       ${{ if deployEnv.variableFile }}:
@@ -72,19 +79,21 @@ stages:
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
                   aksCluster: ${{ variables.aksCluster }}
                   aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/oauth2-proxy-helm-diff.yaml
+              - template: ../steps/linkerd-helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
                   releaseName: ${{ variables.helmReleaseName }}
                   deployEnv: ${{ variables.deployEnvironment }}
-                  helmChart: ${{ variables.helmChart }}
-                  helmChartVersion: ${{ variables.helmChartVersion }}
+                  linkerdHelmChartName: ${{ variables.linkerdHelmChartName }}
+                  linkerdHelmChartVersion: ${{ variables.linkerdHelmChartVersion }}
+                  linkerdCrdsHelmChartName: ${{ variables.linkerdCrdsHelmChartName }}
+                  linkerdCrdsHelmChartVersion: ${{ variables.linkerdCrdsHelmChartVersion }}
                   helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
                   overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
-    - stage: ${{ deployEnv.environment }}_Deploy
-      displayName: '${{ deployEnv.environment }} - Deploy'
-      dependsOn: ${{ deployEnv.environment}}_PreDeploy
+    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy
+      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
+      dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
       ${{ if deployEnv.variableFile }}:
         variables:
           - template: ${{ deployEnv.variableFile }}
@@ -97,7 +106,7 @@ stages:
             poolName: ${{ variables.agentPool }}
             workspace:
               clean: all
-            azureEnvironment: ${{ variables.azureEnvironment }}
+            azureEnvironment: ${{ deployEnv.azureEnvironment }}
             steps:
               - template: ../../common/steps/verify-ado-agent.yaml
               - template: ../steps/get-kubernetes-credentials.yaml
@@ -107,14 +116,16 @@ stages:
                   aksCluster: ${{ variables.aksCluster }}
                   aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               #- checkout: self
-              - template: ../steps/oauth2-proxy-helm-upgrade.yaml
+              - template: ../steps/linkerd-helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
                   releaseName: ${{ variables.helmReleaseName }}
                   deployEnv: ${{ variables.deployEnvironment }}
-                  helmChart: ${{ variables.helmChart }}
-                  helmChartVersion: ${{ variables.helmChartVersion }}
+                  linkerdHelmChartName: ${{ variables.linkerdHelmChartName }}
+                  linkerdHelmChartVersion: ${{ variables.linkerdHelmChartVersion }}
+                  linkerdCrdsHelmChartName: ${{ variables.linkerdCrdsHelmChartName }}
+                  linkerdCrdsHelmChartVersion: ${{ variables.linkerdCrdsHelmChartVersion }}
                   helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
                   overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
         
