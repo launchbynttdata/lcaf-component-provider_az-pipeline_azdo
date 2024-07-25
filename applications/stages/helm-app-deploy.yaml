@@ -57,7 +57,8 @@ stages:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: $(aksResourceGroup)
                   aksCluster: $(aksCluster)
-                  aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               - template: ../steps/helm-acr-login.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
@@ -96,7 +97,8 @@ stages:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: $(aksResourceGroup)
                   aksCluster: $(aksCluster)
-                  aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               - template: ../steps/helm-acr-login.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}

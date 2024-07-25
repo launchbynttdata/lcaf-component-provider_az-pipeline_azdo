@@ -19,7 +19,12 @@ parameters:
   - name: helmChartRepoUrl
     type: string
     default: false
-  - name: helmChart
+  # Repo name to use when performing `helm repo add` command
+  - name: helmRepoName
+    type: string
+    default: false
+  # Chart name inside the chart repository
+  - name: helmChartName
     type: string
     default: false
   - name: helmChartVersion
@@ -36,6 +41,14 @@ parameters:
   - name: overrideValuesFile
     type: string
     default: false
+  # Adds the --force to helm upgrade
+  - name: helmForceUpgrade
+    type: string
+    default: true
+  # Adds the --wait to helm upgrade
+  - name: helmWaitForCompletion
+    type: string
+    default: true
 
 steps:
   - ${{ each step in parameters.additionalSteps }}:
@@ -60,11 +73,28 @@ steps:
           kubectl create namespace ${{ parameters.namespace }}
         fi
 
-        echo -e "Adding helm repo: ${{ parameters.helmChart }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
+        echo -e "Adding helm repo: ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
 
-        helm repo add ${{ parameters.helmChart }} ${{ parameters.helmChartRepoUrl }}
+        helm repo add ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }}
         helm repo update
 
-        echo -e "Performing helm install/upgrade.\n"
-        helm upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmChart }}/${{ parameters.helmChart }} \
-           -n ${{ parameters.namespace }} -f ${{ parameters.overrideValuesFile }} --wait --force
+        command="helm upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmRepoName }}/${{ parameters.helmChartName }} \
+          -n ${{ parameters.namespace }} --version ${{ parameters.helmChartVersion }}"
+
+        if [[ ${{ parameters.helmWaitForCompletion }} =~ ^[Tt]rue$ ]]; then
+           command+=" --wait"
+        fi
+
+        if [[ ${{ parameters.helmForceUpgrade }} =~ ^[Tt]rue$ ]]; then
+           command+=" --force"
+        fi
+
+        if [[ -n "${{ parameters.overrideValuesFile }}" ]]; then
+          command+=" -f ${{ parameters.overrideValuesFile }}"
+        fi
+
+        echo -e "Below command will be executed:\n${command}"
+
+        echo -e "Performing helm upgrade...\n"
+
+        eval ${command}

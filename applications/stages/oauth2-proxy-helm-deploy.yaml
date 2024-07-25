@@ -71,7 +71,8 @@ stages:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
                   aksCluster: ${{ variables.aksCluster }}
-                  aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               - template: ../steps/oauth2-proxy-helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
@@ -105,7 +106,8 @@ stages:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
                   aksCluster: ${{ variables.aksCluster }}
-                  aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               #- checkout: self
               - template: ../steps/oauth2-proxy-helm-upgrade.yaml
                 parameters:

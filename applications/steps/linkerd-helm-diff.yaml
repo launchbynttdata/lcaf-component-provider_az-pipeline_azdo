@@ -75,7 +75,7 @@ steps:
 
         echo -e "Performing Helm diff operation for  Linkerd CRDs. You may see no output when there are no differences..\n"
         helm diff upgrade linkerd-crds linkerd/${{ parameters.linkerdCrdsHelmChartName }} \
-          -n ${{ parameters.namespace }} --allow-unreleased
+          -n ${{ parameters.namespace }} --version ${{ parameters.linkerdCrdsHelmChartVersion }} --allow-unreleased
 
         echo -e "Extracting the secrets for Trust Anchor and Issuer certs from key-vault: $(keyVaultName)\n"
 
@@ -84,7 +84,7 @@ steps:
         az keyvault secret show --vault-name $(keyVaultName) --name $(LINKERD_ISSUER_CERT_SECRET_NAME) --query value -o tsv > issuer_cert.pem
 
         command="helm diff upgrade --install ${{ parameters.releaseName }} linkerd/${{ parameters.linkerdHelmChartName }} \
-          -n ${{ parameters.namespace }} --allow-unreleased \
+          -n ${{ parameters.namespace }} --version ${{ parameters.linkerdHelmChartVersion }} --allow-unreleased \
           --set-file identityTrustAnchorsPEM=./trust_anchor_cert.pem \
           --set-file identity.issuer.tls.crtPEM=./issuer_cert.pem \
           --set-file identity.issuer.tls.keyPEM=./issuer_private_key.pem"
