@@ -25,6 +25,23 @@ parameters:
     default: 'Dockerfile'
 
 steps:
+  - task: AzureClI@2
+    name: CreateCommaSeparatedTagList
+    displayName: Create comma-separated tag list
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        # Takes whatever was supplied in the parameter, turns newlines into commas, 
+        # and drops leading and trailing commas that may arise from blank newlines
+        COMMA_SEPARATED_TAGS=$(echo "${{ parameters.dockerImageTag }}" | paste -s -d, - | sed -E 's/^,*(.*[^,]),*$/\1/gi')
+        echo "COMMA_SEPARATED_TAGS=$COMMA_SEPARATED_TAGS"
+        [ -n "$COMMA_SEPARATED_TAGS" ] || (echo "No tag could be parsed for this repository. Cannot continue!" ; exit 1)
+        echo "##vso[task.setvariable variable=CommaSeparatedTagList;isOutput=true]$COMMA_SEPARATED_TAGS"
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
+
   - task: AzureCLI@2
     displayName: 'Login to container registry'
     inputs:
@@ -46,7 +63,7 @@ steps:
       command: build
       Dockerfile: ${{ parameters.dockerfile }}
       arguments: --build-arg FEED_ACCESSTOKEN=$(System.Accesstoken)
-      tags: ${{ parameters.dockerImageTag }}
+      tags: $(CreateCommaSeparatedTagList.CommaSeparatedTagList)
 
   - task: AzureCLI@2
     displayName: 'Push image to repo'
