@@ -19,7 +19,10 @@ parameters:
   - name: helmChartRepoUrl
     type: string
     default: false
-  - name: helmChart
+  - name: helmRepoName
+    type: string
+    default: false
+  - name: helmChartName
     type: string
     default: false
   - name: helmChartVersion
@@ -60,12 +63,22 @@ steps:
           kubectl create namespace ${{ parameters.namespace }}
         fi
 
-        echo -e "Adding helm repo: ${{ parameters.helmChart }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
+        echo -e "Adding helm repo: ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
 
-        helm repo add ${{ parameters.helmChart }} ${{ parameters.helmChartRepoUrl }}
+        helm repo add ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }}
         helm repo update
 
-        echo -e "Performing helm diff operation for upgrade.\n"
+        command="helm diff upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmRepoName }}/${{ parameters.helmChartName }} \
+          -n ${{ parameters.namespace }} --version ${{ parameters.helmChartVersion }} --allow-unreleased"
+
+        echo -e "Helm values file: ${{ parameters.overrideValuesFile }}"
+
+        if [[ -n "${{ parameters.overrideValuesFile }}" ]]; then
+          command+=" -f ${{ parameters.overrideValuesFile }}"
+        fi
+
+        echo -e "Below command will be executed:\n\n${command}"
+
+        echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
         
-        helm diff upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmChart }}/${{ parameters.helmChart }} \
-           -n ${{ parameters.namespace }} -f ${{ parameters.overrideValuesFile }} --allow-unreleased
+        eval ${command}

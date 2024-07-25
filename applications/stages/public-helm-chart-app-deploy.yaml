@@ -1,4 +1,5 @@
-# This template is a multistage template to deploy Linkerd Service Mesh control plane on AKS cluster
+# This template is a multistage template to deploy any public Helm chart (helm repo is publicly accessible) which doesn't have any secrets as dependencies.
+# This helm deploy would only accept inputs in the form of a values.yaml file. No --set commands are allowed.
 
 # This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
 # Expect the following variables to be available in the variable file
@@ -13,31 +14,18 @@
 #     value: 'trp-appsk8s-govva-dev-000-rg-000'
 #   - name: helmChartRepoUrl
 #     value: 'https://helm.linkerd.io/stable'
-#   - name: linkerdHelmChartName
+#   - name: helmRepoName
+#     value: linkerd
+#   - name: helmChartName
 #     value: 'linkerd-control-plane'
-#   - name: linkerdHelmChartVersion
+#   - name: helmChartVersion
 #     value: '1.16.11'
-#   - name: linkerdCrdsHelmChartName
-#     value: 'linkerd-crds'
-#   - name: linkerdCrdsHelmChartVersion
-#     value: '1.8.0'
 #   - name: helmReleaseName
 #     value: 'linkerd-control-plane'
 #   - name: namespace
 #     value: 'linkerd'
-#   - name: azureEnvironment
-#     value: 'trp-appsk8s_linkerd-dev-000-aks'
 #   - name: deployEnvironment
 #     value: 'dev'
-#   - name: keyVaultName
-#     value: 'trp-dev-vault'
-#   # The below secret mappings must exist in the variables file. The key must always be the same. The value refers to the secret name in key vault
-#   - name: LINKERD_TRUST_ANCHOR_CERT_SECRET_NAME
-#     value: 'linkerd-trust-anchor-cert'
-#   - name: LINKERD_ISSUER_PRIVATE_KEY_SECRET_NAME
-#     value: 'linkerd-issuer-private-key'
-#   - name: LINKERD_ISSUER_CERT_SECRET_NAME
-#     value: 'linkerd-issuer-cert'
 
 
 parameters:
@@ -80,17 +68,16 @@ stages:
                   aksCluster: ${{ variables.aksCluster }}
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/linkerd-helm-diff.yaml
+              - template: ../steps/public-chart-helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
                   releaseName: ${{ variables.helmReleaseName }}
                   deployEnv: ${{ variables.deployEnvironment }}
-                  linkerdHelmChartName: ${{ variables.linkerdHelmChartName }}
-                  linkerdHelmChartVersion: ${{ variables.linkerdHelmChartVersion }}
-                  linkerdCrdsHelmChartName: ${{ variables.linkerdCrdsHelmChartName }}
-                  linkerdCrdsHelmChartVersion: ${{ variables.linkerdCrdsHelmChartVersion }}
+                  helmChartName: ${{ variables.helmChartName }}
+                  helmChartVersion: ${{ variables.helmChartVersion }}
                   helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
+                  helmRepoName: ${{ variables.helmRepoName }}
                   overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
     - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy
       displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
@@ -109,7 +96,6 @@ stages:
               clean: all
             azureEnvironment: ${{ deployEnv.azureEnvironment }}
             steps:
-              - template: ../../common/steps/verify-ado-agent.yaml
               - template: ../steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
@@ -118,17 +104,21 @@ stages:
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               #- checkout: self
-              - template: ../steps/linkerd-helm-upgrade.yaml
+              - template: ../steps/public-chart-helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
                   releaseName: ${{ variables.helmReleaseName }}
                   deployEnv: ${{ variables.deployEnvironment }}
-                  linkerdHelmChartName: ${{ variables.linkerdHelmChartName }}
-                  linkerdHelmChartVersion: ${{ variables.linkerdHelmChartVersion }}
-                  linkerdCrdsHelmChartName: ${{ variables.linkerdCrdsHelmChartName }}
-                  linkerdCrdsHelmChartVersion: ${{ variables.linkerdCrdsHelmChartVersion }}
+                  helmChartName: ${{ variables.helmChartName }}
+                  helmChartVersion: ${{ variables.helmChartVersion }}
                   helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
+                  helmRepoName: ${{ variables.helmRepoName }}
                   overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
+                  ${{ if deployEnv.helmWaitForCompletion }}:
+                    helmWaitForCompletion: ${{ deployEnv.helmWaitForCompletion }}
+                  ${{ if deployEnv.helmForceUpgrade }}:
+                    helmForceUpgrade: ${{ deployEnv.helmForceUpgrade }}
+
         
                         
