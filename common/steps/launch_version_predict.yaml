@@ -1,0 +1,28 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: pullRequestSourceBranch
+    type: string
+
+
+steps:
+  - task: AzureClI@2
+    displayName: Launch Predict Next Version
+    name: predict_next_version
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(Build.Repository.LocalPath)
+      inlineScript: |
+        export PATH=/home/launch/env/bin:$PATH
+        echo "BUILD_SOURCE_BRANCH: ${BUILD_SOURCE_BRANCH}"
+        echo "PULL_REQUEST_SOURCE_BRANCH: ${PULL_REQUEST_SOURCE_BRANCH}"
+        SOURCE_BRANCH=${PULL_REQUEST_SOURCE_BRANCH:-${BUILD_SOURCE_BRANCH}}
+        echo "SOURCE_BRANCH: ${SOURCE_BRANCH}"
+        # If we get a non-main branch, we want to predict the next version.
+        [ $SOURCE_BRANCH == 'main' ] || echo "The next released version is likely to be: $(launch github version predict --source-branch "${SOURCE_BRANCH}"), if this PR is the next PR merged."
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
+    env:
+      BUILD_SOURCE_BRANCH: $(buildSourceBranch)
+      PULL_REQUEST_SOURCE_BRANCH: ${{ parameters.pullRequestSourceBranch }}

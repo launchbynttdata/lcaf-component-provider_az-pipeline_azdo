@@ -31,30 +31,34 @@ parameters:
     default: 'None'
 
 stages:
-  - stage: build_image
-    displayName: Build Image
-    jobs:
-      - template: /common/jobs/generic-job.yaml
-        parameters:
-          jobName: BuildImage
-          jobDisplayName: Build Image
-          poolName: ${{ parameters.poolName }}
-          workspace:
-            clean: all
-          steps:
-            - template: /applications/steps/local-build-and-push-docker-image.yaml
-              parameters:
-                acrRegistry: ${{ parameters.imageRepository }}
-                distPath: ${{ parameters.distPath }}
-                dockerfile: ${{ parameters.dockerfile }}
-                serviceConnection: ${{ parameters.serviceConnection }}
-                ${{ if ne(parameters.dockerImageName, '') }}:
-                  dockerImageName: ${{ parameters.dockerImageName }}
-                ${{ else }}:
-                  dockerImageName: $(Build.Repository.Name)
-                ${{ if ne(parameters.dockerImageTag, 'None') }}:
-                  dockerImageTag: ${{ parameters.dockerImageTag }}
-                ${{ else }}:
-                  dockerImageTag: |
-                    $(Build.BuildId)
-                    latest
+  - ${{ if eq(parameters.dockerImageTag, 'None') }}:
+    - stage: build_image
+      displayName: Build Image
+      jobs:
+        - template: /common/jobs/generic-job.yaml
+          parameters:
+            jobName: BuildImage
+            jobDisplayName: Build Image
+            poolName: ${{ parameters.poolName }}
+            workspace:
+              clean: all
+            steps:
+              - template: /common/steps/get_latest_semver_tag.yaml
+                parameters:
+                  serviceConnection: ${{ parameters.serviceConnection }}
+              - template: /applications/steps/local-build-and-push-docker-image.yaml
+                parameters:
+                  acrRegistry: ${{ parameters.imageRepository }}
+                  distPath: ${{ parameters.distPath }}
+                  dockerfile: ${{ parameters.dockerfile }}
+                  serviceConnection: ${{ parameters.serviceConnection }}
+                  ${{ if ne(parameters.dockerImageName, '') }}:
+                    dockerImageName: ${{ parameters.dockerImageName }}
+                  ${{ else }}:
+                    dockerImageName: $(Build.Repository.Name)
+                  ${{ if ne(parameters.dockerImageTag, 'None') }}:
+                    dockerImageTag: ${{ parameters.dockerImageTag }}
+                  ${{ else }}:
+                    dockerImageTag: |
+                      $(LatestSemverTag)
+                      latest

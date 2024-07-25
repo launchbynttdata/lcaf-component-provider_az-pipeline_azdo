@@ -24,19 +24,30 @@ parameters:
   - name: container
     type: string
     default: ''
+  - name: dependsOn
+    type: string
+    default: ''
+  - name: variables
+    type: object
+    default: []
 
 jobs:
   - job: ${{ parameters.jobName }}
     displayName: ${{ parameters.jobDisplayName }}
     pool: ${{ parameters.poolName }}
+    ${{ if ne(parameters.dependsOn, '') }}:
+      dependsOn: ${{ parameters.dependsOn }}
     ${{ if ne(parameters.container, '') }}:
       container: ${{ parameters.container }}
     workspace: ${{ parameters.workspace }}
     # For self hosted agents the default timeoutInMinutes is unlimited, so we need to set it explicitly
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
+    ${{ if gt(length(parameters.variables), 0) }}:
+      variables: ${{ parameters.variables }}
     steps:
       # In deploy job, the code is not checked out by default. So, we need to checkout the code first.
       - checkout: self
+        persistCredentials: true
       - ${{ each step in parameters.steps }}:
         - ${{ step }}
