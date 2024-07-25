@@ -75,7 +75,7 @@ steps:
 
         echo -e "Performing Helm upgrade for Linkerd CRDs.\n"
         helm upgrade --install linkerd-crds linkerd/${{ parameters.linkerdCrdsHelmChartName }} \
-          -n ${{ parameters.namespace }} --version ${{ parameters.linkerdCrdsHelmChartVersion } --wait --force
+          -n ${{ parameters.namespace }} --version ${{ parameters.linkerdCrdsHelmChartVersion }} --wait --force
 
         echo -e "Extracting the secrets for Trust Anchor and Issuer certs from key-vault: $(keyVaultName)\n"
 
@@ -84,7 +84,7 @@ steps:
         az keyvault secret show --vault-name $(keyVaultName) --name $(LINKERD_ISSUER_CERT_SECRET_NAME) --query value -o tsv > issuer_cert.pem
 
         command="helm upgrade --install ${{ parameters.releaseName }} linkerd/${{ parameters.linkerdHelmChartName }} \
-          -n ${{ parameters.namespace }} --version ${{ parameters.linkerdHelmChartVersion } \
+          -n ${{ parameters.namespace }} --version ${{ parameters.linkerdHelmChartVersion }} \
           --set-file identityTrustAnchorsPEM=./trust_anchor_cert.pem \
           --set-file identity.issuer.tls.crtPEM=./issuer_cert.pem \
           --set-file identity.issuer.tls.keyPEM=./issuer_private_key.pem \
