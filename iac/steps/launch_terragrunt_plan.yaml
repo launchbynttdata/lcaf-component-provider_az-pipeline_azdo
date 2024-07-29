@@ -1,0 +1,33 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: repositoryUrl
+    type: string
+    default: ''
+  - name: gitToken
+    type: string
+    default: ''
+  - name: commitSha
+    type: string
+    default: ''
+  - name: targetEnvironment
+    type: string
+
+steps:
+  - template: ../../common/steps/install_launch-cli.yaml
+  - task: AzureClI@2
+    displayName: Run Launch Pipeline Terragrunt Plan
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        launch --version
+        echo "dryrun: launch pipeline terragrunt plan"
+        # launch pipeline terragrunt plan \
+        #   --repository-url  ${{ parameters.repositoryUrl }}\
+        #   --git-token ${{ parameters.gitToken }}\
+        #   --commit-sha ${{ parameters.commitSha }}\
+        #   --target-environment ${{ parameters.targetEnvironment }}
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true

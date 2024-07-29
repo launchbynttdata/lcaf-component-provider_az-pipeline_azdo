@@ -1,0 +1,16 @@
+parameters:
+  - name: vmImageNameMSFTHosted
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: targetEnvironment
+    type: string
+
+stages:
+  - stage: PullRequestEvent
+    displayName: Pull Request Event
+    jobs:
+      - template: ../jobs/pr_event.yaml
+        parameters:
+          vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
+          serviceConnection: ${{ parameters.serviceConnection }}
