@@ -22,8 +22,8 @@ stages:
         displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre Deploy'
         dependsOn: ${{ deployEnv.dependsOn }}
         jobs:
-          - job: ${{ deployEnv.environment }}_TerraformInitPlan
-            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terraform Init and Plan'
+          - job: ${{ deployEnv.environment }}_TerragruntInitPlan
+            displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terragrunt Init and Plan'
             pool: ${{ parameters.pool }}
             workspace:
               clean: all
