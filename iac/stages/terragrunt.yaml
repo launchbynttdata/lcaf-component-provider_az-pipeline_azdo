@@ -10,8 +10,8 @@ parameters:
   type: stepList
   default: []
 - name: pool
-  type: string
-  default: false
+  type: object
+  default: []
 - name: repoCheckoutSteps
   type: stepList
   default: []
