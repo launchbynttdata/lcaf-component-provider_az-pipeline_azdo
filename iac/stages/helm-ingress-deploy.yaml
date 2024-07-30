@@ -8,8 +8,8 @@ parameters:
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
-    - stage: ${{ deployEnv.environment}}_PreDeploy
-      displayName: '${{ deployEnv.environment }} - Pre deploy'
+    - stage: ${{ deployEnv.environment}}_Ingress_PreDeploy
+      displayName: '${{ deployEnv.environment }} - Ingress Pre deploy'
       dependsOn: ${{deployEnv.dependsOn}}
       ${{ if deployEnv.variableFile }}:
         variables:
@@ -17,8 +17,8 @@ stages:
       jobs:
         - template: ../jobs/generic-job.yaml
           parameters:
-            jobName: ${{ deployEnv.environment }}_PreDeployJob
-            jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
+            jobName: ${{ deployEnv.environment }}_Ingress_PreDeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Ingress Pre deploy'
             poolName: ${{ parameters.agentPool }}
             workspace:
               clean: all
