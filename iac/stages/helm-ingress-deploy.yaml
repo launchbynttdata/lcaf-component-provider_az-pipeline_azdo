@@ -1,0 +1,61 @@
+parameters:
+- name: deployEnvironments
+  type: object
+  default: []
+- name: agentPool
+  type: string
+  default: ''
+
+stages:
+  - ${{ each deployEnv in parameters.deployEnvironments }}:
+    - stage: ${{ deployEnv.environment}}_PreDeploy
+      displayName: '${{ deployEnv.environment }} - Pre deploy'
+      dependsOn: ${{deployEnv.dependsOn}}
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
+      jobs:
+        - template: ../jobs/generic-job.yaml
+          parameters:
+            jobName: ${{ deployEnv.environment }}_PreDeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
+            poolName: ${{ parameters.agentPool }}
+            workspace:
+              clean: all
+            steps:
+              - template: ../steps/asdf-install.yaml
+                parameters:
+                  pluginName: 'helm-diff'
+                  pluginVersion: '3.9.5'
+              - template: ../steps/get-kubernetes-credentials.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  aksResourceGroup: $(aksResourceGroup)
+                  aksCluster: $(aksCluster)
+                         
+    # - stage: ${{ deployEnv.environment }}_Deploy
+    #   displayName: '${{ deployEnv.environment }} - Deploy'
+    #   dependsOn: ${{ deployEnv.environment}}_PreDeploy
+    #   ${{ if deployEnv.variableFile }}:
+    #     variables:
+    #       - template: ${{ deployEnv.variableFile }}
+    #   jobs:
+    #     - template: ../jobs/deploy-job.yaml
+    #       parameters:
+    #         jobName: ${{ deployEnv.environment }}_DeployJob
+    #         jobDisplayName: '${{ deployEnv.environment }} - Deploy'
+    #         poolName: ${{ parameters.agentPool }}
+    #         workspace:
+    #           clean: all
+    #         azureEnvironment: ${{ variables.azureEnvironment }}
+    #         steps:
+    #           - template: ../steps/verify-ado-agent.yaml
+    #           - template: ../steps/get-kubernetes-credentials.yaml
+    #             parameters:
+    #               serviceConnection: ${{ variables.serviceConnection }}
+    #               aksResourceGroup: $(aksResourceGroup)
+    #               aksCluster: $(aksCluster)
+    #           - template: ../steps/helm-install-ingress.yaml
+    #             parameters:
+    #               serviceConnection: ${{ variables.serviceConnection }}
+   
