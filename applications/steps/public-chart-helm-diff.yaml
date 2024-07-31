@@ -83,12 +83,6 @@ steps:
           command+=" -f ${{ parameters.overrideValuesFile }}"
         fi
 
-        echo -e "Below command will be executed:\n\n${command}"
-
-        echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
-        
-        eval ${command}
-
         pairs=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
 
         echo -e "key vault name: ${{ parameters.keyVaultName }}"
@@ -96,8 +90,17 @@ steps:
         for pair in $pairs; do
             # Split the pair into key and value using ':' as a delimiter
             helm_key=$(echo $pair | cut -d':' -f1)
-            secret_name=$(echo $pair | cut -d':' -f2)s
-
+            secret_name=$(echo $pair | cut -d':' -f2)
+            secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
             echo "Key: $helm_key"
-            echo "Value: $secret_name"
+            echo "Value: $secret_value"
+            command+=" --set $secret_name=$secret_value"
         done
+
+        echo -e "Below command will be executed:\n\n${command}"
+
+        echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
+        
+        eval ${command}
+
+       
