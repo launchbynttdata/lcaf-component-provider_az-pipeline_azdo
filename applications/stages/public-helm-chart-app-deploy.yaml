@@ -123,10 +123,10 @@ stages:
                     helmWaitForCompletion: ${{ deployEnv.helmWaitForCompletion }}
                   ${{ if deployEnv.helmForceUpgrade }}:
                     helmForceUpgrade: ${{ deployEnv.helmForceUpgrade }}
-                  ${{ if variables.secretFields }}:
-                    secretFields: ${{ variables.secretFields }}
-                  ${{ if variables.keyVaultName }}:
-                    keyVaultName: ${{ variables.keyVaultName }}
+                  # ${{ if variables.secretFields }}:
+                  #   secretFields: ${{ variables.secretFields }}
+                  # ${{ if variables.keyVaultName }}:
+                  #   keyVaultName: ${{ variables.keyVaultName }}
 
         
                         
