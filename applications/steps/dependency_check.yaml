@@ -47,6 +47,7 @@ steps:
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
     
     - task: PublishTestResults@2
+      condition: always()
       displayName: 'Publish Dependency Check Test Results'
       inputs:
         testResultsFormat: 'JUnit'
