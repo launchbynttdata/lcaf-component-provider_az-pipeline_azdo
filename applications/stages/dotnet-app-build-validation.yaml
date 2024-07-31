@@ -29,6 +29,12 @@ parameters:
   - name: runTests
     type: boolean
     default: true
+  - name: runDependencyCheck
+    type: boolean
+    default: true
+  - name: cvssThreshold
+    type: number
+    default: 4
 
 stages:
   - stage: build_validation
@@ -74,3 +80,11 @@ stages:
                   certPath: $(Agent.ToolsDirectory)/custom.crt
                   authCustomNugetFeed: true
                   buildConfiguration: 'Release'
+                
+            - ${{ if eq(parameters.runDependencyCheck, true) }}:
+              - template: /applications/steps/dependency_check.yaml
+                parameters:
+                  scanPath: '**/*.csproj'
+                  certPath: $(Agent.ToolsDirectory)/custom.crt                
+                  authCustomNugetFeed: true
+                  cvssThreshold: ${{ parameters.cvssThreshold }}

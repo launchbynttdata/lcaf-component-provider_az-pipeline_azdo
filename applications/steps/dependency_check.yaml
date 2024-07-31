@@ -1,0 +1,55 @@
+            
+# This template will run a dependency check for an application.
+
+# parameters:
+#  - name: certPath - The path to the certificate file. Default is false, which means no certificate is used.
+#  - name: authCustomNugetFeed - If true, the template will attempt to authenticate to a pre-configured nuget feed.
+#  - name: scanPath - The path to scan for project dependencies and identify vulnerabilities.
+#  - name: cvssThreshold - If a vulnerability has a CVSS score greater than or equal to this score, the step will fail.
+
+parameters:
+  - name: certPath
+    type: string
+    default: 'false'
+  - name: authCustomNugetFeed
+    type: boolean
+    default: false
+  - name: scanPath
+    type: string
+    default: '**/*.csproj'
+  - name: cvssThreshold
+    type: number
+    default: 4
+
+steps:
+ 
+  - ${{ if parameters.authCustomNugetFeed }}:
+    - template: /applications/steps/nuget_auth_to_repo.yaml
+      parameters:
+        certPath: ${{ parameters.certPath }}
+
+    - task: dependency-check-build-task@6
+      displayName: 'Run dependency check'
+      inputs:
+        projectName: '$(Build.Repository.Name)'
+        scanPath: ${{ parameters.scanPath }}
+        format: 'JUNIT'
+        uploadReports: true
+        reportsDirectory: '$(Agent.TempDirectory)/**/dependency-check'
+        reportFilename: 'dependency-check-junit.xml'
+        nvdApiKey: "2b40145f-8d51-43b0-b1d1-f5cdc61ca9a8"
+        junitFailOnCVSS: ${{ parameters.cvssThreshold }}
+        failOnCVSS: ${{ parameters.cvssThreshold }}
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+    
+    - task: PublishTestResults@2
+      displayName: 'Publish Dependency Check Test Results'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'dependency-check-junit.xml' 
+        searchFolder: '$(Agent.TempDirectory)/**/dependency-check' 
+        testRunTitle: 'Dependency Check'
