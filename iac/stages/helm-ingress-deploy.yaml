@@ -26,8 +26,6 @@ stages:
             workspace:
               clean: all
             steps:
-              # - ${{ each step in parameters.repoCheckoutSteps }}:
-              #   - ${{ step }}
               - template: ../steps/asdf-install.yaml
                 parameters:
                   pluginName: 'helm-diff'
@@ -37,30 +35,29 @@ stages:
                   serviceConnection: ${{ deployEnv.serviceConnection }}
                   aksResourceGroup: $(aksResourceGroup)
                   aksCluster: $(aksCluster)
-                         
-    # - stage: ${{ deployEnv.environment }}_Deploy
-    #   displayName: '${{ deployEnv.environment }} - Deploy'
-    #   dependsOn: ${{ deployEnv.environment}}_PreDeploy
-    #   ${{ if deployEnv.variableFile }}:
-    #     variables:
-    #       - template: ${{ deployEnv.variableFile }}
-    #   jobs:
-    #     - template: ../jobs/deploy-job.yaml
-    #       parameters:
-    #         jobName: ${{ deployEnv.environment }}_DeployJob
-    #         jobDisplayName: '${{ deployEnv.environment }} - Deploy'
-    #         poolName: ${{ parameters.agentPool }}
-    #         workspace:
-    #           clean: all
-    #         azureEnvironment: ${{ variables.azureEnvironment }}
-    #         steps:
-    #           - template: ../steps/verify-ado-agent.yaml
-    #           - template: ../steps/get-kubernetes-credentials.yaml
-    #             parameters:
-    #               serviceConnection: ${{ deployEnv.serviceConnection }}
-    #               aksResourceGroup: $(aksResourceGroup)
-    #               aksCluster: $(aksCluster)
-    #           - template: ../steps/helm-install-ingress.yaml
-    #             parameters:
-    #               serviceConnection: ${{ deployEnv.serviceConnection }}
+    - stage: ${{ deployEnv.environment }}_Ingress_Deploy
+      displayName: '${{ deployEnv.environment }} - Ingress Deploy'
+      dependsOn: ${{ deployEnv.environment}}_Ingress_PreDeploy
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}@self
+      jobs:
+        - template: ../jobs/deploy-job.yaml
+          parameters:
+            jobName: ${{ deployEnv.environment }}_Ingress_DeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Ingress Deploy'
+            poolName: ${{ parameters.agentPool }}
+            workspace:
+              clean: all
+            azureEnvironment: ${{ deployEnv.azureEnvironment }}
+            steps:
+              - template: ../steps/verify-ado-agent.yaml
+              - template: ../steps/get-kubernetes-credentials.yaml
+                parameters:
+                  serviceConnection: ${{ deployEnv.serviceConnection }}
+                  aksResourceGroup: $(aksResourceGroup)
+                  aksCluster: $(aksCluster)
+              - template: ../steps/helm-install-ingress.yaml
+                parameters:
+                  serviceConnection: ${{ deployEnv.serviceConnection }}
    
