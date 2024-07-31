@@ -16,7 +16,7 @@ stages:
       dependsOn: ${{deployEnv.dependsOn}}
       ${{ if deployEnv.variableFile }}:
         variables:
-          - template: ${{ deployEnv.variableFile }}
+          - template: ${{ deployEnv.variableFile }}@self
       jobs:
         - template: ../jobs/generic-job.yaml
           parameters:
