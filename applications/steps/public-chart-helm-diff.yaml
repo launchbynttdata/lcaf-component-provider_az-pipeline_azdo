@@ -39,9 +39,11 @@ parameters:
   - name: overrideValuesFile
     type: string
     default: false
+  # Secrets will be defined in variables.yaml in the form of `otel.connectionString:connection-string,otel.password:password`
   - name: secretFields
     type: string
-    default: "otel.connectionString:connection-string,otel.password:password"
+    default: ""
+  # The service connection must have secrets read access on the Key Vault
   - name: keyVaultName
     type: string
     default: ""
@@ -83,15 +85,15 @@ steps:
           command+=" -f ${{ parameters.overrideValuesFile }}"
         fi
 
-        pairs=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
+        # Secrets will be appended to the helm command (if any) using --set option
+        secretsList=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
 
-        echo -e "key vault name: ${{ parameters.keyVaultName }}"
-
-        for pair in $pairs; do
+        for pair in $secretsList; do
             # Split the pair into key and value using ':' as a delimiter
             helm_key=$(echo $pair | cut -d':' -f1)
             secret_name=$(echo $pair | cut -d':' -f2)
             secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
+            [ $? -ne 0 ] && exit 1
             echo "Key: $helm_key"
             echo "Value: $secret_value"
             command+=" --set $secret_name=$secret_value"
