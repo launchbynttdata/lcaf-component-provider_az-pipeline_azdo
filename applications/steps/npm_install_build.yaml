@@ -1,0 +1,71 @@
+### This template is used to install node modules and run build commands for a node application.
+# parameters:
+#   - name: nodeVersionSpec (optional) The version of Node.js to install. Default is false, which means Node.js is not installed.
+#   - name: certPath (optional) The path to the certificate file. Default is false, which means no certificate is used.
+#   - name: command (optional) The command to run. Default is 'npm install && npm run build'.
+#   - name: authCustomNpmRegistry (optional) If true, the template will attempt to authenticate to a pre-configured npm registry.
+
+parameters:
+  - name: nodeVersionSpec
+    type: string
+    default: 'false'
+  - name: certPath
+    type: string
+    default: 'false'
+  - name: command
+    type: string
+    default: |
+      npm install
+      npm run build
+  - name: authCustomNpmRegistry
+    type: boolean
+    default: false
+  - name: auditResultsPath
+    type: string
+    default: '$(Build.Repository.Name)-audit.json'
+
+steps:
+  - task: NodeTool@0
+    displayName: 'Install Node'
+    enabled: ${{ ne(parameters.nodeVersionSpec, 'false') }}
+    inputs:
+      versionSource: 'spec'
+      versionSpec: ${{ parameters.nodeVersionSpec }}
+
+  - ${{ if parameters.authCustomNpmRegistry }}:
+    - template: /applications/steps/npm_auth_to_ado_feed.yaml
+      parameters:
+        certPath: ${{ parameters.certPath }}
+
+  - task: Bash@3
+    displayName: 'Run npm build'
+    inputs:
+      targetType: inline
+      script: ${{ parameters.command }}
+    ${{ if ne(parameters.certPath, 'false') }}:
+      env:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+  
+  - task: Bash@3
+    displayName: 'Run npm audit'
+    inputs:
+      targetType: inline
+      script: | 
+        npm audit --json 2>&1 | tee ${{ parameters.auditResultsPath }}
+    ${{ if ne(parameters.certPath, 'false') }}:
+      env:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+  
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish npm audit results'
+    enabled: true
+    inputs:
+      PathtoPublish: ${{ parameters.auditResultsPath }}
+      ArtifactName: 'NpmPackageAudit'
+      publishLocation: 'Container'
+    ${{ if ne(parameters.certPath, 'false') }}:
+      env:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

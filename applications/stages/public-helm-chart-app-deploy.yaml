@@ -1,0 +1,124 @@
+# This template is a multistage template to deploy any public Helm chart (helm repo is publicly accessible) which doesn't have any secrets as dependencies.
+# This helm deploy would only accept inputs in the form of a values.yaml file. No --set commands are allowed.
+
+# This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
+# Expect the following variables to be available in the variable file
+# variables: 
+#   - name: serviceConnection
+#     value: 'trp_dev'
+#   - name: agentPool
+#     value: 'dev-k8s-pool'
+#   - name: aksCluster
+#     value: 'trp-appsk8s-dev-000-aks'
+#   - name: aksResourceGroup
+#     value: 'trp-appsk8s-govva-dev-000-rg-000'
+#   - name: helmChartRepoUrl
+#     value: 'https://helm.linkerd.io/stable'
+#   - name: helmRepoName
+#     value: linkerd
+#   - name: helmChartName
+#     value: 'linkerd-control-plane'
+#   - name: helmChartVersion
+#     value: '1.16.11'
+#   - name: helmReleaseName
+#     value: 'linkerd-control-plane'
+#   - name: namespace
+#     value: 'linkerd'
+#   - name: deployEnvironment
+#     value: 'dev'
+
+
+parameters:
+- name: deployEnvironments
+  type: object
+  default: []
+  # Sample deployEnvironments object
+  # environment: 'dev'
+  # region: usgovvirginia
+  # environmentNumber: 000
+  # azureEnvironment: trp-appsk8s_linkerd-dev-000-aks
+  # dependsOn: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy' # Must be empty for the first stage
+  # variableFile: '/middlewares/env/dev/linkerd/pipeline-variables.yaml@self'
+  # aksAdEnabled: false
+  # overrideValuesFile: 'middlewares/env/dev/linkerd/helm-values.yaml' (optional)
+
+stages:
+  - ${{ each deployEnv in parameters.deployEnvironments }}:
+    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
+      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre deploy'
+      dependsOn: ${{deployEnv.dependsOn}}
+      # Most of the variables used later in the file to pass values to parameters come from this variable file
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
+      jobs:
+        - template: ../../common/jobs/generic-job.yaml
+          parameters:
+            jobName: ${{ deployEnv.environment }}_PreDeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
+            # Agent pool would be different for each environment. Comes from envs/{env}/pipelines/variables.yaml
+            poolName: ${{ variables.agentPool }}
+            workspace:
+              clean: all
+            steps:
+              - template: ../steps/get-kubernetes-credentials.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  aksResourceGroup: ${{ variables.aksResourceGroup }}
+                  aksCluster: ${{ variables.aksCluster }}
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+              - template: ../steps/public-chart-helm-diff.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  namespace: ${{ variables.namespace }}
+                  releaseName: ${{ variables.helmReleaseName }}
+                  deployEnv: ${{ variables.deployEnvironment }}
+                  helmChartName: ${{ variables.helmChartName }}
+                  helmChartVersion: ${{ variables.helmChartVersion }}
+                  helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
+                  helmRepoName: ${{ variables.helmRepoName }}
+                  overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
+    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy
+      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
+      dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
+      jobs:
+        - template: ../../common/jobs/deploy-job.yaml
+          parameters:
+            jobName: ${{ deployEnv.environment }}_DeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Deploy'
+             # Agent pool would be different for each environment. Comes from envs/{env}/pipelines/variables.yaml
+            poolName: ${{ variables.agentPool }}
+            workspace:
+              clean: all
+            azureEnvironment: ${{ deployEnv.azureEnvironment }}
+            steps:
+              - template: ../steps/get-kubernetes-credentials.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  aksResourceGroup: ${{ variables.aksResourceGroup }}
+                  aksCluster: ${{ variables.aksCluster }}
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+              #- checkout: self
+              - template: ../steps/public-chart-helm-upgrade.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  namespace: ${{ variables.namespace }}
+                  releaseName: ${{ variables.helmReleaseName }}
+                  deployEnv: ${{ variables.deployEnvironment }}
+                  helmChartName: ${{ variables.helmChartName }}
+                  helmChartVersion: ${{ variables.helmChartVersion }}
+                  helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
+                  helmRepoName: ${{ variables.helmRepoName }}
+                  overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
+                  ${{ if deployEnv.helmWaitForCompletion }}:
+                    helmWaitForCompletion: ${{ deployEnv.helmWaitForCompletion }}
+                  ${{ if deployEnv.helmForceUpgrade }}:
+                    helmForceUpgrade: ${{ deployEnv.helmForceUpgrade }}
+
+        
+                        

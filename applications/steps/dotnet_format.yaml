@@ -1,0 +1,33 @@
+# This template will run format checks for a dotnet application.
+
+# parameters:
+#  - name: certPath - The path to the certificate file. Default is false, which means no certificate is used.
+#  - name: authCustomNugetFeed - If true, the template will attempt to authenticate to a pre-configured nuget feed.
+
+parameters:
+  - name: certPath
+    type: string
+    default: 'false'
+  - name: authCustomNugetFeed
+    type: boolean
+    default: false
+
+steps:
+ 
+  - ${{ if parameters.authCustomNugetFeed }}:
+    - template: /applications/steps/nuget_auth_to_repo.yaml
+      parameters:
+        certPath: ${{ parameters.certPath }}
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Run dotnet format'
+      enabled: true
+      inputs:
+        command: custom
+        custom: 'format'
+        arguments:  '--verify-no-changes --verbosity diagnostic'
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

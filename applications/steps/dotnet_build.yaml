@@ -1,0 +1,86 @@
+# This template will build a dotnet applcation.
+
+# parameters:
+#  - name: solutionPath - The path to the solution file. Default is '**/*.sln'
+#  - name: certPath - The path to the certificate file. Default is false, which means no certificate is used.
+#  - name: command - the command to send to the dotnet build step. Default is 'build'
+#  - name: authCustomNugetFeed - If true, the template will attempt to authenticate to a pre-configured nuget feed.
+#  - name: buildConfiguration - The build configuration to use. Default is 'Release'
+
+parameters:
+  - name: solutionPath
+    type: string
+    default: '**/*.sln'
+  - name: certPath
+    type: string
+    default: 'false'
+  - name: command
+    type: string
+    default: 'build'
+  - name: authCustomNugetFeed
+    type: boolean
+    default: false
+  - name: buildConfiguration
+    type: string
+    default: 'Release'
+  - name: auditResultsPath
+    type: string
+    default: '$(Build.Repository.Name)-audit.log'
+
+steps:
+ 
+  - ${{ if parameters.authCustomNugetFeed }}:
+    - template: /applications/steps/nuget_auth_to_repo.yaml
+      parameters:
+        certPath: ${{ parameters.certPath }}
+  
+    - task: DotNetCoreCLI@2
+      displayName: 'Run dotnet restore'
+      enabled: true
+      inputs:
+        command: restore
+        projects: ${{ parameters.solutionPath }}
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+    
+    - task: Bash@3
+      displayName: 'Run NuGet package audit'
+      enabled: true
+      inputs:
+        targetType: inline
+        script: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee ${{ parameters.auditResultsPath }}
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish package audit results'
+      enabled: true
+      inputs:
+        PathtoPublish: ${{ parameters.auditResultsPath }}
+        ArtifactName: 'NugetPackageAudit'
+        publishLocation: 'Container'
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Run dotnet build'
+      enabled: true
+      inputs:
+        command: ${{ parameters.command }}
+        projects: ${{ parameters.solutionPath }}
+        arguments: '--configuration ${{ parameters.buildConfiguration }}'
+      env:
+        NOOP: noop 
+        ${{ if ne(parameters.certPath, 'false') }}:
+          SSL_CERT_FILE: ${{ parameters.certPath }}
+          NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

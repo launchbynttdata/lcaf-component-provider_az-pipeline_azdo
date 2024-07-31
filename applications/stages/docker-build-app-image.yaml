@@ -1,0 +1,61 @@
+# This template will build a docker image and push it to the container registry.
+
+# parameters:
+#  - name: poolName - The name of the agent pool to run the job on.
+#  - name: dockerfile - The path to the Dockerfile. Default is 'Dockerfile'
+#  - name: imageRepository - The FQDN of the image repository
+#  - name: distPath - the directory containing the build artifacts. Default is 'dist/'
+#  - name: serviceConnection - the ADO service connection to use to login to the container registroy
+#  - name: dockerImageName - the name of the docker image. Default is the name of the repository
+#  - name: dockerImageTag - the tag(s) of the docker image. Default is the build id and 'latest'
+
+parameters:
+  - name: poolName
+    type: string
+  - name: dockerfile
+    type: string
+    default: 'Dockerfile'
+  - name: imageRepository
+    type: string
+  - name: distPath
+    type: string
+    default: 'dist/'
+  - name: serviceConnection
+    type: string
+  - name: dockerImageName
+    type: string
+    default: ''
+  - name: dockerImageTag
+    type: string
+
+stages:
+  - stage: build_image
+    displayName: Build Image
+    jobs:
+      - template: /common/jobs/generic-job.yaml
+        parameters:
+          jobName: BuildImage
+          jobDisplayName: Build Image
+          poolName: ${{ parameters.poolName }}
+          workspace:
+            clean: all
+          steps:
+            - template: /common/steps/get_latest_semver_tag.yaml
+              parameters:
+                serviceConnection: ${{ parameters.serviceConnection }}
+            - template: /applications/steps/local-build-and-push-docker-image.yaml
+              parameters:
+                acrRegistry: ${{ parameters.imageRepository }}
+                distPath: ${{ parameters.distPath }}
+                dockerfile: ${{ parameters.dockerfile }}
+                serviceConnection: ${{ parameters.serviceConnection }}
+                ${{ if ne(parameters.dockerImageName, '') }}:
+                  dockerImageName: ${{ parameters.dockerImageName }}
+                ${{ else }}:
+                  dockerImageName: $(Build.Repository.Name)
+                ${{ if ne(parameters.dockerImageTag, 'None') }}:
+                  dockerImageTag: ${{ parameters.dockerImageTag }}
+                ${{ else }}:
+                  dockerImageTag: |
+                    ${{ parameters.dockerImageTag }}
+                    latest

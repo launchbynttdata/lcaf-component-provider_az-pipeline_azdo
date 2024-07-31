@@ -1,0 +1,121 @@
+# This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
+# Expect the following variables to be available in the variable file
+# variables: 
+#   - name: serviceConnection
+#     value: 'ado-sp'
+#   - name: agentPool
+#     value: 'container-pool'
+#   - name: aksCluster
+#     value: 'dso-ado-k8s-dev-001-aks'
+#   - name: aksResourceGroup
+#     value: 'dso-k8s-001'
+#   - name: helmChart
+#     value: 'dotnet-app'
+#   - name: helmChartVersion
+#     value: '0.1.0'
+#   - name: helmReleaseName
+#     value: 'sample'
+#   - name: namespace
+#     value: 'dev'
+#   - name: azureEnvironment
+#     value: 'aks-sample-dev'
+
+
+parameters:
+- name: deployEnvironments
+  type: object
+  default: []
+  # Sample deployEnvironments object
+  # environment: 'test'
+  # dependsOn: 'dev_Deploy'
+  # variableFile: '/envs/test/pipelines/variables.yaml@self'
+  # acrName: ${{ parameters.acrName }}
+  # imageName: ${{ parameters.dockerImageName }}
+  # imageTag: ${{ parameters.imageTag }}
+  # aksAdEnabled: false
+
+stages:
+  - ${{ each deployEnv in parameters.deployEnvironments }}:
+    - stage: ${{ deployEnv.environment}}_PreDeploy
+      displayName: '${{ deployEnv.environment }} - Pre deploy'
+      dependsOn: ${{deployEnv.dependsOn}}
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
+      jobs:
+        - template: ../../common/jobs/generic-job.yaml
+          parameters:
+            jobName: ${{ deployEnv.environment }}_PreDeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
+            # Agent pool would be different for each environment. Comes from envs/{env}/pipelines/variables.yaml
+            poolName: ${{ variables.agentPool }}
+            workspace:
+              clean: all
+            steps:
+              - template: ../steps/get-kubernetes-credentials.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  aksResourceGroup: $(aksResourceGroup)
+                  aksCluster: $(aksCluster)
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+              - template: ../steps/helm-acr-login.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  acrName: ${{ deployEnv.acrName }}
+              - template: ../steps/helm-diff.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  namespace: $(namespace)
+                  releaseName: $(helmReleaseName)
+                  acrName: ${{ deployEnv.acrName }}
+                  imageName: ${{ deployEnv.imageName }}
+                  imageTag: ${{ deployEnv.imageTag }}
+                  deployEnv: ${{ deployEnv.environment }}
+                  helmChart: $(helmChart)
+                  helmChartVersion: $(helmChartVersion)
+    - stage: ${{ deployEnv.environment }}_Deploy
+      displayName: '${{ deployEnv.environment }} - Deploy'
+      dependsOn: ${{ deployEnv.environment}}_PreDeploy
+      ${{ if deployEnv.variableFile }}:
+        variables:
+          - template: ${{ deployEnv.variableFile }}
+      jobs:
+        - template: ../../common/jobs/deploy-job.yaml
+          parameters:
+            jobName: ${{ deployEnv.environment }}_DeployJob
+            jobDisplayName: '${{ deployEnv.environment }} - Deploy'
+             # Agent pool would be different for each environment. Comes from envs/{env}/pipelines/variables.yaml
+            poolName: ${{ variables.agentPool }}
+            workspace:
+              clean: all
+            azureEnvironment: ${{ variables.azureEnvironment }}
+            steps:
+              - template: ../../common/steps/verify-ado-agent.yaml
+              - template: ../steps/get-kubernetes-credentials.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  aksResourceGroup: $(aksResourceGroup)
+                  aksCluster: $(aksCluster)
+                  ${{ if deployEnv.aksAdEnabled }}:
+                    aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+              - template: ../steps/helm-acr-login.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  acrName: ${{ deployEnv.acrName }}
+              #- checkout: self
+              - template: ../steps/helm-upgrade.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  namespace: $(namespace)
+                  releaseName: $(helmReleaseName)
+                  acrName: ${{ deployEnv.acrName }}
+                  imageName: ${{ deployEnv.imageName }}
+                  imageTag: ${{ deployEnv.imageTag }}
+                  deployEnv: ${{ deployEnv.environment }}
+                  helmChart: $(helmChart)
+                  helmChartVersion: $(helmChartVersion)
+                  ${{ if variables.helmTimeoutDuration }}:
+                    helmTimeoutDuration: ${{ variables.helmTimeoutDuration }}
+        
+                        

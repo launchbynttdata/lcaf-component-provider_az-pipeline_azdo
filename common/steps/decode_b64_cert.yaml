@@ -1,0 +1,17 @@
+parameters:
+  - name: base64Cert
+    type: string
+  - name: certPath
+    type: string
+    default: $(Agent.ToolsDirectory)/custom.crt
+
+steps:
+  - task: bash@3
+    displayName: 'Retrieve ADO SSL certificate'
+    enabled: true
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo -n "$SSL_CERT_CHAIN_BASE64" | base64 -d > ${{ parameters.certPath }}
+    env:
+      SSL_CERT_CHAIN_BASE64: ${{ parameters.base64Cert }}

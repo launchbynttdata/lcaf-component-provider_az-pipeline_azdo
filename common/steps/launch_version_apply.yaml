@@ -1,0 +1,32 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: adoUrl
+    type: string
+    default: 'https://dev.azure.com/launch-dso/platform-accelerators'
+
+steps:
+  - task: AzureClI@2
+    displayName: Launch Github Version Apply
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        export PATH=/home/launch/env/bin:$PATH
+        # The pull request associated with this run is obtained from the
+        # commit message when the change was merged. This is the only reasonable
+        # way I can find to accomplish this in Azure DevOps, which doesn't allow
+        # triggering pipelines on a PR merge event like other SCM systems do.
+        ORIGINATING_PULL_REQUEST_ID=$(git log -n 1 --pretty=format:%B | sed -ne 's/.*PR \([0-9]*\).*/\1/p' | head -n 1)
+        echo "ORIGINATING_PULL_REQUEST_ID: ${ORIGINATING_PULL_REQUEST_ID}"
+        # If for some reason we can't extract the numeric PR identifier, we'll fail with a particular message.
+        [ -n "${ORIGINATING_PULL_REQUEST_ID}" ] || (echo "Could not determine the originating pull request for this pipeline run! Check the latest commit message and ensure that the PR Merge verbiage added by Azure DevOps is present going forward."; exit 1)
+        AUTHORIZATION_HEADER="Authorization: Bearer $SYSTEM_ACCESSTOKEN"
+        SOURCE_BRANCH_NAME=$(curl -H "$AUTHORIZATION_HEADER" -s ${{ parameters.adoUrl }}/_apis/git/pullrequests/$ORIGINATING_PULL_REQUEST_ID\?api-version\=7.0 | jq -r .sourceRefName | sed -e 's,refs/heads/,,g')
+        echo "SOURCE_BRANCH_NAME: ${SOURCE_BRANCH_NAME}"
+        launch github version apply --pipeline --source-branch $SOURCE_BRANCH_NAME
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)

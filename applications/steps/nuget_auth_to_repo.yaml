@@ -1,0 +1,18 @@
+# This template will authenticate to a nuget feed as defined in nuget.config
+
+# parameters:
+#   - name: certPath - The path to the certificate file. Default is false, which means no certificate is used.
+
+parameters:
+  - name: certPath
+    type: string
+    default: 'false'
+
+steps:
+  - task: NuGetAuthenticate@1
+    displayName: 'NuGet Authenticate'
+    env:
+      NOOP: noop
+      ${{ if ne(parameters.certPath, 'false') }}:
+        SSL_CERT_FILE: ${{ parameters.certPath }}
+        NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
