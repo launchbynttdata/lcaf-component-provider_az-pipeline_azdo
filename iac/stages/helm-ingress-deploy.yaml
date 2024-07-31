@@ -5,6 +5,9 @@ parameters:
 - name: agentPool
   type: string
   default: ''
+- name: repoCheckoutSteps
+  type: stepList
+  default: []
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
@@ -23,6 +26,8 @@ stages:
             workspace:
               clean: all
             steps:
+              - ${{ each step in parameters.repoCheckoutSteps }}:
+                - ${{ step }}
               - template: ../steps/asdf-install.yaml
                 parameters:
                   pluginName: 'helm-diff'
