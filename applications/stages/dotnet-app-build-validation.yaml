@@ -34,7 +34,7 @@ parameters:
     default: true
   - name: cvssThreshold
     type: number
-    default: 4
+    default: 7.0
 
 stages:
   - stage: build_validation
