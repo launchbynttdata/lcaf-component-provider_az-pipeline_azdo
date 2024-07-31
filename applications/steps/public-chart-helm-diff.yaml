@@ -39,6 +39,12 @@ parameters:
   - name: overrideValuesFile
     type: string
     default: false
+  - name: secretFields
+    type: string
+    default: "otel.connectionString:connection-string,otel.password:password"
+  - name: keyVaultName
+    type: string
+    default: ""
 
 steps:
   - ${{ each step in parameters.additionalSteps }}:
@@ -82,3 +88,16 @@ steps:
         echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
         
         eval ${command}
+
+        pairs=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
+
+        echo -e "key vault name: ${{ parameters.keyVaultName }}"
+
+        for pair in $pairs; do
+            # Split the pair into key and value using ':' as a delimiter
+            helm_key=$(echo $pair | cut -d':' -f1)
+            secret_name=$(echo $pair | cut -d':' -f2)s
+
+            echo "Key: $helm_key"
+            echo "Value: $secret_name"
+        done
