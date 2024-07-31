@@ -8,6 +8,25 @@ parameters:
   - name: workingDirectory
     type: string
     default: $(Pipeline.Workspace)/s
+  - name: releaseName
+    type: string
+    default: false
+  - name: ingressClass
+    type: string
+    default: false
+  - name: namespace
+    type: string
+    default: false
+  - name: helmRepoName
+    type: string
+    default: false
+  - name: helmRepoUrl
+    type: string
+    default: false
+  - name: helmChartReference  
+    type: string
+    default: false
+  
 
 steps:
   - task: AzureCLI@2
@@ -21,17 +40,17 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       scriptLocation: 'inlineScript'
       inlineScript: |
-        set -x
-        ls -l 
-        pwd
-        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+        # set -x
+        # ls -l 
+        # pwd
+        helm repo add ${{ parameters.helmRepoName }} ${{ parameters.helmRepoUrl }}
         helm repo update
-        helm upgrade --install public-ingress-nginx ingress-nginx/ingress-nginx \
-        --namespace public-ingress \
+        helm upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmChartReference }}  \
+        --namespace ${{ parameters.namespace }} \
         --create-namespace \
         --set controller.replicaCount=1 \
-        --set controller.ingressClassResource.controllerValue=k8s.io/public-ingress-nginx \
-        --set controller.ingressClass=public-ingress \
-        --set controller.ingressClassResource.name=public-ingress \
+        --set controller.ingressClassResource.controllerValue=k8s.io/${{ parameters.releaseName }} \
+        --set controller.ingressClass=${{ parameters.ingressClass }} \
+        --set controller.ingressClassResource.name=${{ parameters.ingressClass }} \
         --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
         --set controller.allowSnippetAnnotations=true

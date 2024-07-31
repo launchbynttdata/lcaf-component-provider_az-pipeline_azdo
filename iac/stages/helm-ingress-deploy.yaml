@@ -5,36 +5,33 @@ parameters:
 - name: agentPool
   type: string
   default: ''
-- name: repoCheckoutSteps
-  type: stepList
-  default: []
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
-    - stage: ${{ deployEnv.environment}}_Ingress_PreDeploy
-      displayName: '${{ deployEnv.environment }} - Ingress Pre deploy'
-      dependsOn: ${{deployEnv.dependsOn}}
-      ${{ if deployEnv.variableFile }}:
-        variables:
-          - template: ${{ deployEnv.variableFile }}@self
-      jobs:
-        - template: ../jobs/generic-job.yaml
-          parameters:
-            jobName: ${{ deployEnv.environment }}_Ingress_PreDeployJob
-            jobDisplayName: '${{ deployEnv.environment }} - Ingress Pre deploy'
-            poolName: ${{ parameters.agentPool }}
-            workspace:
-              clean: all
-            steps:
-              - template: ../steps/asdf-install.yaml
-                parameters:
-                  pluginName: 'helm-diff'
-                  pluginVersion: '3.9.5'
-              - template: ../steps/get-kubernetes-credentials.yaml
-                parameters:
-                  serviceConnection: ${{ deployEnv.serviceConnection }}
-                  aksResourceGroup: $(aksResourceGroup)
-                  aksCluster: $(aksCluster)
+    # - stage: ${{ deployEnv.environment}}_Ingress_PreDeploy
+    #   displayName: '${{ deployEnv.environment }} - Ingress Pre deploy'
+    #   dependsOn: ${{deployEnv.dependsOn}}
+    #   ${{ if deployEnv.variableFile }}:
+    #     variables:
+    #       - template: ${{ deployEnv.variableFile }}@self
+    #   jobs:
+    #     - template: ../jobs/generic-job.yaml
+    #       parameters:
+    #         jobName: ${{ deployEnv.environment }}_Ingress_PreDeployJob
+    #         jobDisplayName: '${{ deployEnv.environment }} - Ingress Pre deploy'
+    #         poolName: ${{ parameters.agentPool }}
+    #         workspace:
+    #           clean: all
+    #         steps:
+    #           - template: ../steps/asdf-install.yaml
+    #             parameters:
+    #               pluginName: 'helm-diff'
+    #               pluginVersion: '3.9.5'
+    #           - template: ../steps/get-kubernetes-credentials.yaml
+    #             parameters:
+    #               serviceConnection: ${{ deployEnv.serviceConnection }}
+    #               aksResourceGroup: $(aksResourceGroup)
+    #               aksCluster: $(aksCluster)
     - stage: ${{ deployEnv.environment }}_Ingress_Deploy
       displayName: '${{ deployEnv.environment }} - Ingress Deploy'
       dependsOn: ${{ deployEnv.environment}}_Ingress_PreDeploy
@@ -60,4 +57,9 @@ stages:
               - template: ../steps/helm-install-ingress.yaml
                 parameters:
                   serviceConnection: ${{ deployEnv.serviceConnection }}
-   
+                  releaseName: $(helmReleaseName)
+                  ingressClass: $(ingressClass)
+                  namespace: $(namespace)
+                  helmRepoName: $(helmRepoName)
+                  helmRepoUrl: $(helmRepoUrl)
+                  helmChartReference: $(helmChartReference)
