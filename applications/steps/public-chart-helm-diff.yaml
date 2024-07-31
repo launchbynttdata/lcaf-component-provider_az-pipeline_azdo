@@ -47,6 +47,10 @@ parameters:
   - name: keyVaultName
     type: string
     default: ""
+  # Additional arguments to passed to `helm upgrade`
+  - name: additionalFields
+    type: string
+    default: ""
 
 steps:
   - ${{ each step in parameters.additionalSteps }}:
@@ -85,6 +89,12 @@ steps:
           command+=" -f ${{ parameters.overrideValuesFile }}"
         fi
 
+        if [[ -n "${{ parameters.additionalFields }}" ]]; then
+          command+=" {{ parameters.additionalFields }}"
+        fi
+
+        echo -e "Below command will be executed (without the secrets):\n\n${command}"
+
         # Secrets will be appended to the helm command (if any) using --set option
         secretsList=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
 
@@ -94,12 +104,9 @@ steps:
             secret_name=$(echo $pair | cut -d':' -f2)
             secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
             [ $? -ne 0 ] && exit 1
-            echo "Key: $helm_key"
-            echo "Value: $secret_value"
+            echo "Secret: $helm_key found in ${{ parameters.keyVaultName }}"
             command+=" --set $secret_name=$secret_value"
         done
-
-        echo -e "Below command will be executed:\n\n${command}"
 
         echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
         

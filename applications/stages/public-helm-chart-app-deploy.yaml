@@ -26,6 +26,12 @@
 #     value: 'linkerd'
 #   - name: deployEnvironment
 #     value: 'dev'
+#   - name: additionalFields
+#     value: '--set image=1.0.1'
+#   - name: keyVaultName
+#     value: 'dso-test-kv-001'
+#   - name: secretFields
+#     value: 'otel.connectionString:connection-string,otel.password:password'
 
 
 parameters:
@@ -83,6 +89,8 @@ stages:
                     secretFields: ${{ variables.secretFields }}
                   ${{ if variables.keyVaultName }}:
                     keyVaultName: ${{ variables.keyVaultName }}
+                  ${{ if variables.additionalFields }}:
+                    additionalFields: ${{ variables.additionalFields }}
     - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy
       displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
       dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
