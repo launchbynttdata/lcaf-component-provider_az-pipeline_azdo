@@ -105,9 +105,9 @@ steps:
             secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
             [ $? -ne 0 ] && exit 1
             echo "Secret: $helm_key found in ${{ parameters.keyVaultName }}"
-            echo "##vso[task.setvariable variable=secretVar;]$secret_value"
+            echo "##vso[task.setvariable variable=secret_var;]$secret_value"
             echo "secret var: $(secret_var)"
-            command+=" --set $secret_name=$(secret_var)"
+            command+=" --set $helm_key=$(secret_var)"
         done
 
         echo -e "Below command will be executed (without the secrets):\n\n${command}"
