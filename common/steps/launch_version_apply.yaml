@@ -1,6 +1,9 @@
 parameters:
   - name: serviceConnection
     type: string
+  - name: adoUrl
+    type: string
+    default: https://fdc-devops.dc.state.fl.us/DefaultCollection/TRP
 
 steps:
   - task: AzureClI@2
@@ -20,7 +23,7 @@ steps:
         # If for some reason we can't extract the numeric PR identifier, we'll fail with a particular message.
         [ -n "${ORIGINATING_PULL_REQUEST_ID}" ] || (echo "Could not determine the originating pull request for this pipeline run! Check the latest commit message and ensure that the PR Merge verbiage added by Azure DevOps is present going forward."; exit 1)
         AUTHORIZATION_HEADER="Authorization: Bearer $SYSTEM_ACCESSTOKEN"
-        SOURCE_BRANCH_NAME=$(curl -H "$AUTHORIZATION_HEADER" -s https://fdc-devops.dc.state.fl.us/DefaultCollection/TRP/_apis/git/pullrequests/$ORIGINATING_PULL_REQUEST_ID\?api-version\=7.0 | jq -r .sourceRefName | sed -e 's,refs/heads/,,g')
+        SOURCE_BRANCH_NAME=$(curl -H "$AUTHORIZATION_HEADER" -s ${{ parameters.adoUrl }}/_apis/git/pullrequests/$ORIGINATING_PULL_REQUEST_ID\?api-version\=7.0 | jq -r .sourceRefName | sed -e 's,refs/heads/,,g')
         echo "SOURCE_BRANCH_NAME: ${SOURCE_BRANCH_NAME}"
         launch github version apply --pipeline --source-branch $SOURCE_BRANCH_NAME
       azureSubscription: ${{ parameters.serviceConnection }}
