@@ -93,7 +93,7 @@ steps:
           command+=" {{ parameters.additionalFields }}"
         fi
 
-        echo -e "Below command will be executed (without the secrets):\n\n${command}"
+        
 
         # Secrets will be appended to the helm command (if any) using --set option
         secretsList=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
@@ -105,8 +105,12 @@ steps:
             secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
             [ $? -ne 0 ] && exit 1
             echo "Secret: $helm_key found in ${{ parameters.keyVaultName }}"
-            command+=" --set $secret_name=$secret_value"
+            echo "##vso[task.setvariable variable=secretVar;]$secret_value"
+            echo "secret var: $(secret_var)"
+            command+=" --set $secret_name=$(secret_var)"
         done
+
+        echo -e "Below command will be executed (without the secrets):\n\n${command}"
 
         echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
         
