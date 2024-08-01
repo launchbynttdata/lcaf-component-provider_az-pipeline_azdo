@@ -35,6 +35,9 @@ parameters:
   - name: cvssThreshold
     type: number
     default: 7.0
+  - name: dependencyCheckJavaOpts
+    type: string
+    default: ""
 
 stages:
   - stage: build_validation
@@ -88,3 +91,5 @@ stages:
                   certPath: $(Agent.ToolsDirectory)/custom.crt                
                   authCustomNugetFeed: true
                   cvssThreshold: ${{ parameters.cvssThreshold }}
+                  ${{ if ne(parameters.dependencyCheckJavaOpts, '') }}:
+                    javaOpts: ${{ parameters.dependencyCheckJavaOpts }}

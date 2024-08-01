@@ -20,6 +20,9 @@ parameters:
   - name: cvssThreshold
     type: number
     default: 4
+  - name: javaOpts
+    type: string
+    default: "-Xmx1024m -Xss8192k"
 
 steps:
  
@@ -41,7 +44,8 @@ steps:
         junitFailOnCVSS: ${{ parameters.cvssThreshold }}
         failOnCVSS: ${{ parameters.cvssThreshold }}
       env:
-        NOOP: noop 
+        NOOP: noop
+        JAVA_OPTS: ${{ parameters.javaOpts }}
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
