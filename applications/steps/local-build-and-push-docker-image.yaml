@@ -23,6 +23,9 @@ parameters:
   - name: dockerfile
     type: string
     default: 'Dockerfile'
+  - name: push
+    type: boolean
+    default: true
 
 steps:
   - task: AzureClI@2
@@ -65,20 +68,21 @@ steps:
       arguments: --build-arg FEED_ACCESSTOKEN=$(System.Accesstoken)
       tags: $(CreateCommaSeparatedTagList.CommaSeparatedTagList)
 
-  - task: AzureCLI@2
-    displayName: 'Push image to repo'
-    inputs:
-      azureSubscription:  ${{ parameters.serviceConnection }}
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
-      inlineScript: |
-        while IFS= read -r tag; do
-          docker push ${ACR_REGISTRY}/${DOCKER_IMAGE_NAME}:$tag
-        done <<< $IMAGE_TAGS
-    env:
-      IMAGE_TAGS: ${{ parameters.dockerImageTag }}
-      ACR_REGISTRY: ${{ parameters.acrRegistry }}
-      DOCKER_IMAGE_NAME: ${{ parameters.dockerImageName }}
+  - ${{ if parameters.push }}:
+    - task: AzureCLI@2
+      displayName: 'Push image to repo'
+      inputs:
+        azureSubscription:  ${{ parameters.serviceConnection }}
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          while IFS= read -r tag; do
+            docker push ${ACR_REGISTRY}/${DOCKER_IMAGE_NAME}:$tag
+          done <<< $IMAGE_TAGS
+      env:
+        IMAGE_TAGS: ${{ parameters.dockerImageTag }}
+        ACR_REGISTRY: ${{ parameters.acrRegistry }}
+        DOCKER_IMAGE_NAME: ${{ parameters.dockerImageName }}
 
 
 

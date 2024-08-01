@@ -29,6 +29,9 @@ parameters:
   - name: dockerImageTag
     type: string
     default: 'None'
+  - name: push
+    type: boolean
+    default: true
 
 stages:
   - ${{ if eq(parameters.dockerImageTag, 'None') }}:
@@ -52,6 +55,7 @@ stages:
                   distPath: ${{ parameters.distPath }}
                   dockerfile: ${{ parameters.dockerfile }}
                   serviceConnection: ${{ parameters.serviceConnection }}
+                  push: ${{ parameters.push }}
                   ${{ if ne(parameters.dockerImageName, '') }}:
                     dockerImageName: ${{ parameters.dockerImageName }}
                   ${{ else }}:
