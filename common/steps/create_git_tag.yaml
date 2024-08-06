@@ -1,0 +1,13 @@
+parameters:
+  - name: tag
+    type: string
+
+steps:
+- task: Bash@3
+  displayName: Set git tag 
+  inputs:
+    targetType: inline 
+    script: |
+      echo "Setting tag ${{ parameters.tag }}"
+      git tag ${{ parameters.tag }}
+      git push origin ${{ parameters.tag }}

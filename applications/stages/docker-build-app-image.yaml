@@ -66,3 +66,9 @@ stages:
                     dockerImageTag: |
                       $(LatestSemverTag)
                       latest
+              - template: /common/steps/create_git_tag.yaml
+                parameters:
+                  ${{ if ne( parameters.dockerImageTag, 'None') }}:
+                    tag: ${{ parameters.dockerImageTag }}
+                  ${{ else }}:
+                    tag: $(LatestSemverTag)
