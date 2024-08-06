@@ -39,6 +39,18 @@ parameters:
   - name: overrideValuesFile
     type: string
     default: false
+  # Secrets will be defined in variables.yaml in the form of `otel.connectionString:connection-string,otel.password:password`
+  - name: secretFields
+    type: string
+    default: ""
+  # The service connection must have secrets read access on the Key Vault
+  - name: keyVaultName
+    type: string
+    default: ""
+  # Additional arguments to passed to `helm upgrade`
+  - name: additionalFields
+    type: string
+    default: ""
 
 steps:
   - ${{ each step in parameters.additionalSteps }}:
@@ -54,7 +66,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       scriptLocation: 'inlineScript'
       inlineScript: |
-        set -x
+        # set -x
         # Check if namespace exists
         if kubectl get namespace ${{ parameters.namespace }} >/dev/null 2>&1; then
           echo "Namespace $namespace already exists"
@@ -69,16 +81,33 @@ steps:
         helm repo update
 
         command="helm diff upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmRepoName }}/${{ parameters.helmChartName }} \
-          -n ${{ parameters.namespace }} --version ${{ parameters.helmChartVersion }} --allow-unreleased"
-
-        echo -e "Helm values file: ${{ parameters.overrideValuesFile }}"
+          -n ${{ parameters.namespace }} --version ${{ parameters.helmChartVersion }} --allow-unreleased --suppress-secrets "
 
         if [[ -n "${{ parameters.overrideValuesFile }}" ]]; then
           command+=" -f ${{ parameters.overrideValuesFile }}"
         fi
 
-        echo -e "Below command will be executed:\n\n${command}"
+        if [[ -n "${{ parameters.additionalFields }}" ]]; then
+          command+=" {{ parameters.additionalFields }}"
+        fi
+
+        echo -e "Below command will be executed (without the secrets):\n\n${command}"
+
+        # Secrets will be appended to the helm command (if any) using --set option
+        secretsList=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
+
+        for pair in $secretsList; do
+            # Split the pair into key and value using ':' as a delimiter
+            helm_key=$(echo ${pair} | cut -d':' -f1)
+            # This will be used to suppress the secret value in the helm diff command
+            suppress_key=$(echo ${helm_key} | tr '.' '\n' | tail -n 1)
+            secret_name=$(echo ${pair} | cut -d':' -f2)
+            secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
+            [ $? -ne 0 ] && exit 1
+            echo "Secret: $helm_key found in ${{ parameters.keyVaultName }}"
+            command+=" --set ${helm_key}=\"${secret_value}\" --suppress-output-line-regex ${suppress_key}"
+        done
 
         echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
         
-        eval ${command}
+        eval "${command}"

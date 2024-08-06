@@ -26,6 +26,12 @@
 #     value: 'linkerd'
 #   - name: deployEnvironment
 #     value: 'dev'
+#   - name: additionalFields
+#     value: '--set image=1.0.1'
+#   - name: keyVaultName
+#     value: 'dso-test-kv-001'
+#   - name: secretFields
+#     value: 'otel.connectionString:connection-string,otel.password:password'
 
 
 parameters:
@@ -79,6 +85,12 @@ stages:
                   helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
                   helmRepoName: ${{ variables.helmRepoName }}
                   overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
+                  ${{ if variables.secretFields }}:
+                    secretFields: ${{ variables.secretFields }}
+                  ${{ if variables.keyVaultName }}:
+                    keyVaultName: ${{ variables.keyVaultName }}
+                  ${{ if variables.additionalFields }}:
+                    additionalFields: ${{ variables.additionalFields }}
     - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy
       displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
       dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
@@ -119,6 +131,12 @@ stages:
                     helmWaitForCompletion: ${{ deployEnv.helmWaitForCompletion }}
                   ${{ if deployEnv.helmForceUpgrade }}:
                     helmForceUpgrade: ${{ deployEnv.helmForceUpgrade }}
+                  ${{ if variables.secretFields }}:
+                    secretFields: ${{ variables.secretFields }}
+                  ${{ if variables.keyVaultName }}:
+                    keyVaultName: ${{ variables.keyVaultName }}
+                  ${{ if variables.additionalFields }}:
+                    additionalFields: ${{ variables.additionalFields }}
 
         
                         

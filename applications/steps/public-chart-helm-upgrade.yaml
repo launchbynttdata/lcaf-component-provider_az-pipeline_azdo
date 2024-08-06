@@ -49,6 +49,18 @@ parameters:
   - name: helmWaitForCompletion
     type: string
     default: true
+    # Secrets will be defined in variables.yaml in the form of `otel.connectionString:connection-string,otel.password:password`
+  - name: secretFields
+    type: string
+    default: ""
+  # The service connection must have secrets read access on the Key Vault
+  - name: keyVaultName
+    type: string
+    default: ""
+  # Additional arguments to passed to `helm upgrade`
+  - name: additionalFields
+    type: string
+    default: ""
 
 steps:
   - ${{ each step in parameters.additionalSteps }}:
@@ -64,7 +76,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       scriptLocation: 'inlineScript'
       inlineScript: |
-        set -x
+        # set -x
         # Check if namespace exists
         if kubectl get namespace ${{ parameters.namespace }} >/dev/null 2>&1; then
           echo "Namespace $namespace already exists"
@@ -93,8 +105,25 @@ steps:
           command+=" -f ${{ parameters.overrideValuesFile }}"
         fi
 
-        echo -e "Below command will be executed:\n${command}"
+         if [[ -n "${{ parameters.additionalFields }}" ]]; then
+          command+=" {{ parameters.additionalFields }}"
+        fi
+
+        echo -e "Below command will be executed (without the secrets):\n\n${command}"
+
+        # Secrets will be appended to the helm command (if any) using --set option
+        secretsList=$(echo ${{ parameters.secretFields }} | tr ',' '\n')
+
+        for pair in $secretsList; do
+            # Split the pair into key and value using ':' as a delimiter
+            helm_key=$(echo ${pair} | cut -d':' -f1)
+            secret_name=$(echo ${pair} | cut -d':' -f2)
+            secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name ${secret_name} --query value -o tsv)
+            [ $? -ne 0 ] && exit 1
+            echo "Secret: ${helm_key} found in ${{ parameters.keyVaultName }}"
+            command+=" --set ${helm_key}=\"${secret_value}\""
+        done
 
         echo -e "Performing helm upgrade...\n"
 
-        eval ${command}
+        eval "${command}"
