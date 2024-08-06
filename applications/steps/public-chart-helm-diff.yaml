@@ -88,7 +88,7 @@ steps:
         fi
 
         if [[ -n "${{ parameters.additionalFields }}" ]]; then
-          command+=" {{ parameters.additionalFields }}"
+          command+=" ${{ parameters.additionalFields }}"
         fi
 
         echo -e "Below command will be executed (without the secrets):\n\n${command}"
