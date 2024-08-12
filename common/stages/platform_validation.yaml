@@ -41,7 +41,7 @@ stages:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
                 HAS_SEMVER_TAG: $(HasSemverTag)
                 FORCE_BRANCH_NAME_VALIDATION: ${{ parameters.forceBranchNameValidation }}
-            - ${{ if eq($(pullRequestTargetBranch), 'main') }}:
+            - ${{ if eq(variables['pullRequestTargetBranch'], 'main') }}:
               - task: AzureClI@2
                 name: MainCheck
                 displayName: MainCheck
@@ -51,7 +51,7 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(\$(pullRequestTargetBranch), 'main')"
+                    echo "eq(variables['pullRequestTargetBranch'], 'main')"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: $(serviceConnection)
                   addSpnToEnvironment: true
@@ -67,7 +67,7 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(\$(pullRequestTargetBranch), 'main') FAILED"
+                    echo "eq(variables['pullRequestTargetBranch'], 'main') FAILED"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: $(serviceConnection)
                   addSpnToEnvironment: true
