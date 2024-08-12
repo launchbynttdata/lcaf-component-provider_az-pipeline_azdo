@@ -5,13 +5,32 @@ parameters:
     type: string
   - name: pullRequestSourceBranch
     type: string
+  - name: pullRequestTargetBranch
+    type: string
   - name: repositoryHasSemverTag
     type: string
     default: false
-  - name: pullRequestTargetBranch
-    type: string
 
 steps:
+  - task: AzureClI@2
+    displayName: Debug
+    name: Debug
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(Pipeline.Workspace)/$(Build.Repository.Name)
+      inlineScript: |
+        export PATH=/home/launch/env/bin:$PATH
+        echo "PULL_REQUEST_TARGET_BRANCH: ${PULL_REQUEST_TARGET_BRANCH}"
+        echo "REPOSITORY_HAS_SEMVER_TAG: ${REPOSITORY_HAS_SEMVER_TAG}"
+        echo -e "\n\n\n---\n\n\n"
+        env | sort
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
+    env:
+      PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
+      REPOSITORY_HAS_SEMVER_TAG: ${{ parameters.repositoryHasSemverTag }}
+
   - task: AzureClI@2
     displayName: Validate Branch Name
     name: ValidateBranchName
