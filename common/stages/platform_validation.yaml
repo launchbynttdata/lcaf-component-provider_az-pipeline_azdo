@@ -6,11 +6,6 @@
 #  pullRequestTargetBranch: The name of the target branch for a pull request.
 
 parameters:
-  # An override to force this stage to run against pull requests that 
-  # target a branch other than 'main'
-  - name: forceBranchNameValidationForNonMainPullRequests
-    type: boolean
-    default: false
   # An override to require repositories to use branch name validation 
   # even if a semantic version tag is not found
   - name: forceBranchNameValidation
@@ -51,7 +46,7 @@ stages:
               env:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
                 HAS_SEMVER_TAG: $(HasSemverTag.HasSemverTag)
-            - ${{ if or(and(or(eq(variables['pullRequestTargetBranch'], 'main'), parameters['forceBranchNameValidationForNonMainPullRequests'])), and(or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation']))) }}:
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation'])) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
                   serviceConnection: $(serviceConnection)
