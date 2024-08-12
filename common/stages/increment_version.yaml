@@ -22,7 +22,7 @@ stages:
   - stage: AutomatedVersionUpdate
     displayName: Automated Version Update
     jobs:
-      - template: common/jobs/generic-job.yaml@lcaf-templates
+      - template: common/jobs/generic-job.yaml
         parameters:
           jobName: AutomatedVersionUpdate
           jobDisplayName: Automated Version Update
@@ -31,15 +31,15 @@ stages:
             - name: buildSourceBranch
               value: $[replace(variables['buildSourceBranch'], 'refs/heads/', '')]
           steps:
-            - template: common/steps/has_semver_tag.yaml@lcaf-templates
+            - template: common/steps/has_semver_tag.yaml
               parameters:
                 serviceConnection: $(serviceConnection)
             - ${{ if eq(variables['pullRequestTargetBranch'], 'refs/heads/main') }}:
               - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), eq(parameters['forceSemanticVersioning'])) }}:
-                - template: common/steps/launch_version_apply.yaml@lcaf-templates
+                - template: common/steps/launch_version_apply.yaml
                   parameters:
                     serviceConnection: $(serviceConnection)
               - ${{ else }}:
-                - template: common/steps/create_git_tag.yaml@lcaf-templates
+                - template: common/steps/create_git_tag.yaml
                   parameters:
                     tag: $(buildId)

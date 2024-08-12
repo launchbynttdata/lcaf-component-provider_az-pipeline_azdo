@@ -21,7 +21,7 @@ stages:
   - stage: BranchNameValidation
     displayName: Branch Name Validation
     jobs:
-      - template: common/jobs/generic-job.yaml@lcaf-templates
+      - template: common/jobs/generic-job.yaml
         parameters:
           jobName: PlatformValidation
           jobDisplayName: Platform Validation
@@ -30,12 +30,12 @@ stages:
             - name: buildSourceBranch
               value: $[replace(variables['buildSourceBranch'], 'refs/heads/', '')]
           steps:
-            - template: common/steps/has_semver_tag.yaml@lcaf-templates
+            - template: common/steps/has_semver_tag.yaml
               parameters:
                 serviceConnection: $(serviceConnection)
             - ${{ if or(eq(variables['pullRequestTargetBranch'], 'refs/heads/main'), parameters['forceBranchNameValidationForNonMainPullRequests']) }}:
               - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation']) }}:
-                - template: common/steps/launch_validate_branch_name.yaml@lcaf-templates
+                - template: common/steps/launch_validate_branch_name.yaml
                   parameters:
                     serviceConnection: $(serviceConnection)
                     pullRequestSourceBranch: $(pullRequestSourceBranch)
