@@ -5,6 +5,16 @@
 #  buildSourceBranch: The branch of the triggering repo the build was queued for.
 #  pullRequestTargetBranch: The name of the target branch for a pull request.
 
+parameters:
+  - name: agentPool
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: buildSourceBranch
+    type: string
+  - name: pullRequestTargetBranch
+    type: string
+
 stages:
   - stage: BranchNameValidation
     displayName: Branch Name Validation
@@ -13,14 +23,11 @@ stages:
         parameters:
           jobName: PlatformValidation
           jobDisplayName: Platform Validation
-          poolName: $(agentPool)
-          variables:
-            - name: buildSourceBranch
-              value: $[replace(variables['buildSourceBranch'], 'refs/heads/', '')]
+          poolName: ${{ parameters.agentPool }}
           steps:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
-                serviceConnection: $(serviceConnection)
+                serviceConnection: ${{ parameters.serviceConnection }}
             - task: AzureClI@2
               name: Debug
               displayName: Debug
@@ -35,13 +42,13 @@ stages:
                   echo FORCE_BRANCH_NAME_VALIDATION=$FORCE_BRANCH_NAME_VALIDATION
                   echo "---"
                   env | sort
-                azureSubscription: $(serviceConnection)
+                azureSubscription: ${{ parameters.serviceConnection }}
                 addSpnToEnvironment: true
               env:
-                PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
+                PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
                 HAS_SEMVER_TAG: $(HasSemverTag)
                 FORCE_BRANCH_NAME_VALIDATION: ${{ parameters.forceBranchNameValidation }}
-            - ${{ if eq(variables['pullRequestTargetBranch'], 'main') }}:
+            - ${{ if eq(parameters.pullRequestTargetBranch, 'refs/heads/main') }}:
               - task: AzureClI@2
                 name: MainCheck
                 displayName: MainCheck
@@ -51,12 +58,12 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(variables['pullRequestTargetBranch'], 'main')"
+                    echo "eq(parameters.pullRequestTargetBranch, 'refs/heads/main')"
                     echo OUTCOME=$OUTCOME
-                  azureSubscription: $(serviceConnection)
+                  azureSubscription: ${{ parameters.serviceConnection }}
                   addSpnToEnvironment: true
                 env:
-                  OUTCOME: $(pullRequestTargetBranch)
+                  OUTCOME: ${{ parameters.pullRequestTargetBranch }}
             - ${{ else }}:
               - task: AzureClI@2
                 name: MainCheckFailed
@@ -67,12 +74,12 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(variables['pullRequestTargetBranch'], 'main') FAILED"
+                    echo "eq(parameters.pullRequestTargetBranch, 'refs/heads/main') FAILED"
                     echo OUTCOME=$OUTCOME
-                  azureSubscription: $(serviceConnection)
+                  azureSubscription: ${{ parameters.serviceConnection }}
                   addSpnToEnvironment: true
                 env:
-                  OUTCOME: $(pullRequestTargetBranch)
+                  OUTCOME: ${{ parameters.pullRequestTargetBranch }}
             - ${{ if eq(variables['HasSemverTag'], 'true') }}:
               - task: AzureClI@2
                 name: SemverCheck
@@ -85,7 +92,7 @@ stages:
                     export PATH=/home/launch/env/bin:$PATH
                     echo "eq(variables['HasSemverTag'], 'true')"
                     echo OUTCOME=$OUTCOME
-                  azureSubscription: $(serviceConnection)
+                  azureSubscription: ${{ parameters.serviceConnection }}
                   addSpnToEnvironment: true
                 env:
                   OUTCOME: $(HasSemverTag)
@@ -101,12 +108,12 @@ stages:
                     export PATH=/home/launch/env/bin:$PATH
                     echo "eq(variables['HasSemverTag'], 'true') FAILED"
                     echo OUTCOME=$OUTCOME
-                  azureSubscription: $(serviceConnection)
+                  azureSubscription: ${{ parameters.serviceConnection }}
                   addSpnToEnvironment: true
                 env:
                   OUTCOME: $(HasSemverTag)
-            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag'], 'true')) }}:
+            - ${{ if or(eq(parameters.pullRequestTargetBranch, 'refs/heads/main'), eq(variables['HasSemverTag'], 'true')) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
-                  serviceConnection: $(serviceConnection)
+                  serviceConnection: ${{ parameters.serviceConnection }}
                   pullRequestSourceBranch: $(pullRequestSourceBranch)
