@@ -46,7 +46,7 @@ stages:
               env:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
                 HAS_SEMVER_TAG: $(HasSemverTag.HasSemverTag)
-            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation'])) }}:
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), eq(parameters['forceBranchNameValidation'], 'true'))) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
                   serviceConnection: $(serviceConnection)
