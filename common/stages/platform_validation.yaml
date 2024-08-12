@@ -1,12 +1,12 @@
 # This template will validate the branch name meets our requirements for automated versioning.
 # The following variables must be present in the current scope for this job to run:
-#  agentPool: The name of the ADO Agent pool to run the job on.
+#  poolName: The name of the ADO Agent pool to run the job on.
 #  serviceConnection: The name of the Service Connection to utilize
 #  buildSourceBranch: The branch of the triggering repo the build was queued for.
 #  pullRequestTargetBranch: The name of the target branch for a pull request.
 
 parameters:
-  - name: agentPool
+  - name: poolName
     type: string
   - name: serviceConnection
     type: string
@@ -23,7 +23,7 @@ stages:
         parameters:
           jobName: PlatformValidation
           jobDisplayName: Platform Validation
-          poolName: ${{ parameters.agentPool }}
+          poolName: ${{ parameters.poolName }}
           steps:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
