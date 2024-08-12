@@ -43,12 +43,14 @@ stages:
                 inlineScript: |
                   export PATH=/home/launch/env/bin:$PATH
                   echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
+                  echo HAS_SEMVER_TAG=$HAS_SEMVER_TAG
                   echo "---"
                   env | sort
                 azureSubscription: $(serviceConnection)
                 addSpnToEnvironment: true
               env:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
+                HAS_SEMVER_TAG: $(HasSemverTag.HasSemverTag)
             - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), parameters['forceBranchNameValidationForNonMainPullRequests']) }}:
               - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation']) }}:
                 - template: /common/steps/launch_validate_branch_name.yaml
