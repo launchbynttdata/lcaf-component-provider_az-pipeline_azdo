@@ -47,7 +47,7 @@ stages:
                   echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
                   echo "---"
                   env | sort
-                azureSubscription: ${{ parameters.serviceConnection }}
+                azureSubscription: $(serviceConnection)
                 addSpnToEnvironment: true
               env:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
