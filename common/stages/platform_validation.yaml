@@ -33,7 +33,7 @@ stages:
             - task: AzureClI@2
               displayName: Launch Validate Branch Name
               name: validate_branch_name
-              condition: or(eq(parameters.pullRequestTargetBranch, 'main'), eq(variables['HasSemverTag'], 'true'))
+              condition: or(eq(parameters['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag'], 'true'))
               inputs:
                 scriptType: bash
                 scriptLocation: inlineScript
