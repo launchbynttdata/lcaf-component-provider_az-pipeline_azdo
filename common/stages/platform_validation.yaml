@@ -41,6 +41,38 @@ stages:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
                 HAS_SEMVER_TAG: $(HasSemverTag.HasSemverTag)
                 FORCE_BRANCH_NAME_VALIDATION: ${{ parameters.forceBranchNameValidation }}
+            - ${{ if eq(variables['pullRequestTargetBranch'], 'main') }}:
+              - task: AzureClI@2
+                name: MainCheck
+                displayName: MainCheck
+                inputs:
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  workingDirectory: $(System.DefaultWorkingDirectory)
+                  inlineScript: |
+                    export PATH=/home/launch/env/bin:$PATH
+                    echo "eq(variables['pullRequestTargetBranch'], 'main')"
+                    echo OUTCOME=$OUTCOME
+                  azureSubscription: $(serviceConnection)
+                  addSpnToEnvironment: true
+                env:
+                  OUTCOME: $(pullRequestTargetBranch)
+            - ${{ if eq(variables['HasSemverTag.HasSemverTag'], 'true') }}:
+              - task: AzureClI@2
+                name: MainCheck
+                displayName: MainCheck
+                inputs:
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  workingDirectory: $(System.DefaultWorkingDirectory)
+                  inlineScript: |
+                    export PATH=/home/launch/env/bin:$PATH
+                    echo "eq(variables['HasSemverTag.HasSemverTag'], 'true')"
+                    echo OUTCOME=$OUTCOME
+                  azureSubscription: $(serviceConnection)
+                  addSpnToEnvironment: true
+                env:
+                  OUTCOME: $(HasSemverTag.HasSemverTag)
             - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true')) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
