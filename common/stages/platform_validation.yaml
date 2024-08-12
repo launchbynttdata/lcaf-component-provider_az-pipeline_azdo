@@ -57,10 +57,26 @@ stages:
                   addSpnToEnvironment: true
                 env:
                   OUTCOME: $(pullRequestTargetBranch)
+            - ${{ else }}:
+              - task: AzureClI@2
+                name: MainCheckFailed
+                displayName: MainCheckFailed
+                inputs:
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  workingDirectory: $(System.DefaultWorkingDirectory)
+                  inlineScript: |
+                    export PATH=/home/launch/env/bin:$PATH
+                    echo "eq(variables['pullRequestTargetBranch'], 'main') FAILED"
+                    echo OUTCOME=$OUTCOME
+                  azureSubscription: $(serviceConnection)
+                  addSpnToEnvironment: true
+                env:
+                  OUTCOME: $(pullRequestTargetBranch)
             - ${{ if eq(variables['HasSemverTag.HasSemverTag'], 'true') }}:
               - task: AzureClI@2
-                name: MainCheck
-                displayName: MainCheck
+                name: SemverCheck
+                displayName: SemverCheck
                 inputs:
                   scriptType: bash
                   scriptLocation: inlineScript
@@ -68,6 +84,22 @@ stages:
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
                     echo "eq(variables['HasSemverTag.HasSemverTag'], 'true')"
+                    echo OUTCOME=$OUTCOME
+                  azureSubscription: $(serviceConnection)
+                  addSpnToEnvironment: true
+                env:
+                  OUTCOME: $(HasSemverTag.HasSemverTag)
+            - ${{ else }}:
+              - task: AzureClI@2
+                name: SemverCheckFailed
+                displayName: SemverCheckFailed
+                inputs:
+                  scriptType: bash
+                  scriptLocation: inlineScript
+                  workingDirectory: $(System.DefaultWorkingDirectory)
+                  inlineScript: |
+                    export PATH=/home/launch/env/bin:$PATH
+                    echo "eq(variables['HasSemverTag.HasSemverTag'], 'true') FAILED"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: $(serviceConnection)
                   addSpnToEnvironment: true
