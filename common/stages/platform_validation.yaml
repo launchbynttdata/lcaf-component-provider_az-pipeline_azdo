@@ -5,13 +5,6 @@
 #  buildSourceBranch: The branch of the triggering repo the build was queued for.
 #  pullRequestTargetBranch: The name of the target branch for a pull request.
 
-parameters:
-  # An override to require repositories to use branch name validation 
-  # even if a semantic version tag is not found
-  - name: forceBranchNameValidation
-    type: boolean
-    default: false
-
 stages:
   - stage: BranchNameValidation
     displayName: Branch Name Validation
@@ -48,7 +41,7 @@ stages:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
                 HAS_SEMVER_TAG: $(HasSemverTag.HasSemverTag)
                 FORCE_BRANCH_NAME_VALIDATION: ${{ parameters.forceBranchNameValidation }}
-            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), eq(parameters['forceBranchNameValidation'], 'true'))) }}:
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true')) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
                   serviceConnection: $(serviceConnection)
