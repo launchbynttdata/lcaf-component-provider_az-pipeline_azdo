@@ -33,8 +33,8 @@ stages:
             - template: common/steps/has_semver_tag.yaml@lcaf-templates
               parameters:
                 serviceConnection: $(serviceConnection)
-            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'refs/heads/main'), eq(parameters['forceBranchNameValidationForNonMainPullRequests'])) }}:
-              - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), eq(parameters['forceBranchNameValidation'])) }}:
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'refs/heads/main'), parameters['forceBranchNameValidationForNonMainPullRequests']) }}:
+              - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation']) }}:
                 - template: common/steps/launch_validate_branch_name.yaml@lcaf-templates
                   parameters:
                     serviceConnection: $(serviceConnection)
