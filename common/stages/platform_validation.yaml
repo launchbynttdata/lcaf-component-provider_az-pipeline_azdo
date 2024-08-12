@@ -1,0 +1,41 @@
+# This template will validate the branch name meets our requirements for automated versioning.
+# The following variables must be present in the current scope for this job to run:
+#  agentPool: The name of the ADO Agent pool to run the job on.
+#  serviceConnection: The name of the Service Connection to utilize
+#  buildSourceBranch: The branch of the triggering repo the build was queued for.
+#  pullRequestTargetBranch: The name of the target branch for a pull request.
+
+parameters:
+  # An override to force this stage to run against pull requests that 
+  # target a branch other than 'main'
+  - name: forceBranchNameValidationForNonMainPullRequests
+    type: boolean
+    default: false
+  # An override to require repositories to use branch name validation 
+  # even if a semantic version tag is not found
+  - name: forceBranchNameValidation
+    type: boolean
+    default: false
+
+stages:
+  - stage: BranchNameValidation
+    displayName: Branch Name Validation
+    jobs:
+      - template: common/jobs/generic-job.yaml@lcaf-templates
+        parameters:
+          jobName: PlatformValidation
+          jobDisplayName: Platform Validation
+          poolName: $(agentPool)
+          variables:
+            - name: buildSourceBranch
+              value: $[replace(variables['buildSourceBranch'], 'refs/heads/', '')]
+          steps:
+            - template: common/steps/has_semver_tag.yaml@lcaf-templates
+              parameters:
+                serviceConnection: $(serviceConnection)
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'refs/heads/main'), eq(parameters['forceBranchNameValidationForNonMainPullRequests'])) }}:
+              - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), eq(parameters['forceBranchNameValidation'])) }}:
+                - template: common/steps/launch_validate_branch_name.yaml@lcaf-templates
+                  parameters:
+                    serviceConnection: $(serviceConnection)
+                    pullRequestSourceBranch: $(pullRequestSourceBranch)
