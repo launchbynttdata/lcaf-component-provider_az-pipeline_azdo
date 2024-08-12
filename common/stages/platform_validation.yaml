@@ -46,7 +46,7 @@ stages:
               env:
                 PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
                 HAS_SEMVER_TAG: $(HasSemverTag)
-            - ${{ if eq(parameters.pullRequestTargetBranch, 'main') }}:
+            ${{ if eq(parameters.pullRequestTargetBranch, 'main') }}:
               - task: AzureClI@2
                 name: MainCheck
                 displayName: MainCheck
@@ -62,7 +62,7 @@ stages:
                   addSpnToEnvironment: true
                 env:
                   OUTCOME: ${{ parameters.pullRequestTargetBranch }}
-            - ${{ else }}:
+            ${{ else }}:
               - task: AzureClI@2
                 name: MainCheckFailed
                 displayName: MainCheckFailed
