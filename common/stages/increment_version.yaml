@@ -35,6 +35,22 @@ stages:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
                 serviceConnection: $(serviceConnection)
+            - task: AzureClI@2
+              name: Debug
+              displayName: Debug
+              inputs:
+                scriptType: bash
+                scriptLocation: inlineScript
+                workingDirectory: $(System.DefaultWorkingDirectory)
+                inlineScript: |
+                  export PATH=/home/launch/env/bin:$PATH
+                  echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
+                  echo "---"
+                  env | sort
+                azureSubscription: ${{ parameters.serviceConnection }}
+                addSpnToEnvironment: true
+              env:
+                PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
             - ${{ if eq(variables['pullRequestTargetBranch'], 'main') }}:
               - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceSemanticVersioning']) }}:
                 - template: /common/steps/launch_version_apply.yaml
