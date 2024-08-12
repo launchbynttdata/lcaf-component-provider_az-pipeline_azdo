@@ -1,4 +1,4 @@
-# This template is a multistage template to deploy any public Helm chart (helm repo is publicly accessible).
+# This template is a multistage template to deploy any  Helm chart stored in ACR. The serviceConnection must have permission to pull from ACR.
 # This helm deploy would only accept inputs in the form of a values.yaml file. --set commands can be passed in as additionalFields
 # If there are any secrets dependency, they can be passed in as secretFields in the format shown below. This pipeline will fetch the secrets 
 # from the Key Vault and pass them to the helm chart with best efforts of not printing them in the pipeline or helm diff. The serviceConnection must have permission to read secrets
@@ -8,27 +8,23 @@
 # Expect the following variables to be available in the variable file
 # variables: 
 #   - name: serviceConnection
-#     value: 'trp_dev'
+#     value: 'ado-sp'
 #   - name: agentPool
-#     value: 'dev-k8s-pool'
+#     value: 'container-pool'
 #   - name: aksCluster
-#     value: 'trp-appsk8s-dev-000-aks'
+#     value: 'dso-ado-k8s-dev-001-aks'
 #   - name: aksResourceGroup
-#     value: 'trp-appsk8s-govva-dev-000-rg-000'
-#   - name: helmChartRepoUrl
-#     value: 'https://helm.linkerd.io/stable'
-#   - name: helmRepoName
-#     value: linkerd
+#     value: 'dso-k8s-001'
 #   - name: helmChartName
-#     value: 'linkerd-control-plane'
+#     value: 'dotnet-app'
 #   - name: helmChartVersion
-#     value: '1.16.11'
+#     value: '0.1.0'
 #   - name: helmReleaseName
-#     value: 'linkerd-control-plane'
+#     value: 'sample'
 #   - name: namespace
-#     value: 'linkerd'
-#   - name: deployEnvironment
 #     value: 'dev'
+#   - name: azureEnvironment
+#     value: 'aks-sample-dev'
 #   - name: additionalFields
 #     value: '--set image=1.0.1'
 #   - name: keyVaultName
@@ -44,29 +40,27 @@ parameters:
   type: object
   default: []
   # Sample deployEnvironments object
-  # environment: 'dev'
-  # region: usgovvirginia
-  # environmentNumber: 000
-  # azureEnvironment: trp-appsk8s_linkerd-dev-000-aks
-  # dependsOn: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy' # Must be empty for the first stage
-  # variableFile: '/middlewares/env/dev/linkerd/pipeline-variables.yaml@self'
+  # environment: 'test'
+  # dependsOn: 'dev_Deploy'
+  # variableFile: '/envs/test/pipelines/variables.yaml@self'
+  # acrName: ${{ parameters.acrName }}
+  # imageName: ${{ parameters.dockerImageName }}
+  # imageTag: ${{ parameters.imageTag }}
   # aksAdEnabled: false
-  # overrideValuesFile: 'middlewares/env/dev/linkerd/helm-values.yaml' (optional)
 
 stages:
   - ${{ each deployEnv in parameters.deployEnvironments }}:
-    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
-      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre deploy'
+    - stage: ${{ deployEnv.environment}}_${{ deployEnv.region }}_PreDeploy
+      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} - Pre deploy'
       dependsOn: ${{deployEnv.dependsOn}}
-      # Most of the variables used later in the file to pass values to parameters come from this variable file
       ${{ if deployEnv.variableFile }}:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
         - template: ../../common/jobs/generic-job.yaml
           parameters:
-            jobName: ${{ deployEnv.environment }}_PreDeployJob
-            jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
+            jobName: ${{ deployEnv.environment }}_${{ deployEnv.region }}_PreDeployJob
+            jobDisplayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} - Pre deploy'
             # Agent pool would be different for each environment. Comes from envs/{env}/pipelines/variables.yaml
             poolName: ${{ variables.agentPool }}
             workspace:
@@ -79,26 +73,30 @@ stages:
                   aksCluster: ${{ variables.aksCluster }}
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/public-chart-helm-diff.yaml
+              - template: ../steps/helm-acr-login.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  acrName: ${{ variables.acrName }}
+              - template: ../steps/acr-chart-helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
                   releaseName: ${{ variables.helmReleaseName }}
-                  deployEnv: ${{ variables.deployEnvironment }}
+                  acrName: ${{ variables.acrName }}
+                  deployEnv: ${{ deployEnv.environment }}
                   helmChartName: ${{ variables.helmChartName }}
                   helmChartVersion: ${{ variables.helmChartVersion }}
-                  helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
-                  helmRepoName: ${{ variables.helmRepoName }}
-                  overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
+                  ${{ if deployEnv.overrideValuesFile }}:
+                    overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
                   ${{ if variables.secretFields }}:
                     secretFields: ${{ variables.secretFields }}
                   ${{ if variables.keyVaultName }}:
                     keyVaultName: ${{ variables.keyVaultName }}
                   ${{ if variables.additionalFields }}:
                     additionalFields: ${{ variables.additionalFields }}
-    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_Deploy
-      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
-      dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_PreDeploy
+    - stage: ${{ deployEnv.environment }}_${{ deployEnv.region }}_Deploy
+      displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} - Deploy'
+      dependsOn: ${{ deployEnv.environment}}_${{ deployEnv.region }}_PreDeploy
       ${{ if deployEnv.variableFile }}:
         variables:
           - template: ${{ deployEnv.variableFile }}
@@ -120,21 +118,24 @@ stages:
                   aksCluster: ${{ variables.aksCluster }}
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
+              - template: ../steps/helm-acr-login.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  acrName: ${{ variables.acrName }}
               #- checkout: self
-              - template: ../steps/public-chart-helm-upgrade.yaml
+              - template: ../steps/acr-chart-helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
                   releaseName: ${{ variables.helmReleaseName }}
-                  deployEnv: ${{ variables.deployEnvironment }}
+                  acrName: ${{ variables.acrName }}
+                  deployEnv: ${{ deployEnv.environment }}
                   helmChartName: ${{ variables.helmChartName }}
                   helmChartVersion: ${{ variables.helmChartVersion }}
-                  helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
-                  helmRepoName: ${{ variables.helmRepoName }}
                   ${{ if variables.helmTimeoutDuration }}:
                     helmTimeoutDuration: ${{ variables.helmTimeoutDuration }}
                   ${{ if deployEnv.overrideValuesFile }}:
-                  overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
+                    overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
                   ${{ if deployEnv.helmWaitForCompletion }}:
                     helmWaitForCompletion: ${{ deployEnv.helmWaitForCompletion }}
                   ${{ if deployEnv.helmForceUpgrade }}:
@@ -145,6 +146,5 @@ stages:
                     keyVaultName: ${{ variables.keyVaultName }}
                   ${{ if variables.additionalFields }}:
                     additionalFields: ${{ variables.additionalFields }}
-
         
                         

@@ -1,5 +1,3 @@
-# This template will deploy a public helm chart on AKS cluster. The helm chart name and repo url must be passed in as parameters
-
 parameters:
   - name: enabled
     type: boolean
@@ -13,17 +11,12 @@ parameters:
   - name: releaseName
     type: string
     default: false
+  - name: acrName
+    type: string
+    default: false
   - name: deployEnv
     type: string
     default: false
-  - name: helmChartRepoUrl
-    type: string
-    default: false
-  # Repo name to use when performing `helm repo add` command
-  - name: helmRepoName
-    type: string
-    default: false
-  # Chart name inside the chart repository
   - name: helmChartName
     type: string
     default: false
@@ -70,7 +63,7 @@ steps:
     - ${{ step }}
   - task: AzureCLI@2
     enabled: ${{ parameters.enabled }}
-    displayName: Helm Upgrade
+    displayName: Helm upgrade
     env:
       KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
     inputs:
@@ -79,7 +72,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       scriptLocation: 'inlineScript'
       inlineScript: |
-        # set -x
+
         # Check if namespace exists
         if kubectl get namespace ${{ parameters.namespace }} >/dev/null 2>&1; then
           echo "Namespace $namespace already exists"
@@ -88,13 +81,11 @@ steps:
           kubectl create namespace ${{ parameters.namespace }}
         fi
 
-        echo -e "Adding helm repo: ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
+        helmRepoUrl="oci://${{ parameters.acrName }}/helm/${{ parameters.helmChartName }}"
 
-        helm repo add ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }}
-        helm repo update
-
-        command="helm upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmRepoName }}/${{ parameters.helmChartName }} \
-          -n ${{ parameters.namespace }} --version ${{ parameters.helmChartVersion }} --timeout ${{ parameters.helmTimeoutDuration }}"
+        command="helm upgrade --install ${{ parameters.releaseName }} ${helmRepoUrl} \
+          --version ${{ parameters.helmChartVersion }} -n ${{ parameters.namespace }} \
+          --timeout ${{ parameters.helmTimeoutDuration }}"
 
         if [[ ${{ parameters.helmWaitForCompletion }} =~ ^[Tt]rue$ ]]; then
            command+=" --wait"
