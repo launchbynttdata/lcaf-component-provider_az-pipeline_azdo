@@ -5,7 +5,7 @@ parameters:
 steps:
   - task: AzureClI@2
     name: HasSemverTag
-    displayName: Determines if a repository is using Semantic Versioning Tags
+    displayName: Check for Semantic Version Tags
     inputs:
       scriptType: bash
       scriptLocation: inlineScript

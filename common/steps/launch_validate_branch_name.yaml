@@ -1,13 +1,21 @@
 parameters:
   - name: serviceConnection
     type: string
+  - name: buildSourceBranch
+    type: string
   - name: pullRequestSourceBranch
+    type: string
+  - name: repositoryHasSemverTag
+    type: boolean
+    default: false
+  - name: pullRequestTargetBranch
     type: string
 
 steps:
   - task: AzureClI@2
-    displayName: Launch Validate Branch Name
-    name: validate_branch_name
+    displayName: Validate Branch Name
+    name: ValidateBranchName
+    condition: and(${{ eq(parameters['pullRequestTargetBranch'], 'main') }}, ${{ eq(parameters['repositoryHasSemverTag'], 'true')))
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
@@ -16,12 +24,12 @@ steps:
         export PATH=/home/launch/env/bin:$PATH
         echo "BUILD_SOURCE_BRANCH: ${BUILD_SOURCE_BRANCH}"
         echo "PULL_REQUEST_SOURCE_BRANCH: ${PULL_REQUEST_SOURCE_BRANCH}"
-        SOURCE_BRANCH=${PULL_REQUEST_SOURCE_BRANCH:-${BRANCH_NAME}}
+        SOURCE_BRANCH=${PULL_REQUEST_SOURCE_BRANCH:-${BUILD_SOURCE_BRANCH}}
         echo "SOURCE_BRANCH: ${SOURCE_BRANCH}"
         # If we get a non-main branch, we need to validate the name using launch-cli.
         [ $SOURCE_BRANCH == 'main' ] || launch validate branch-name --branch-name "${SOURCE_BRANCH}"
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
     env:
-      BUILD_SOURCE_BRANCH: $(buildSourceBranch)
+      BUILD_SOURCE_BRANCH: ${{ parameters.buildSourceBranch }}
       PULL_REQUEST_SOURCE_BRANCH: ${{ parameters.pullRequestSourceBranch }}
