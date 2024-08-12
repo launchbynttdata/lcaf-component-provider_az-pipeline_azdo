@@ -22,20 +22,30 @@ steps:
       inlineScript: |
         export PATH=/home/launch/env/bin:$PATH
         echo "PULL_REQUEST_TARGET_BRANCH: ${PULL_REQUEST_TARGET_BRANCH}"
+        echo "PULL_REQUEST_TARGET_BRANCH_VAR: ${PULL_REQUEST_TARGET_BRANCH_VAR}"
         echo "REPOSITORY_HAS_SEMVER_TAG: ${REPOSITORY_HAS_SEMVER_TAG}"
+        echo "REPOSITORY_HAS_SEMVER_TAG_VAR: ${REPOSITORY_HAS_SEMVER_TAG_VAR}"
         echo "TARGET_BRANCH_OUTCOME: ${TARGET_BRANCH_OUTCOME}"
+        echo "TARGET_BRANCH_OUTCOME_VAR: ${TARGET_BRANCH_OUTCOME_VAR}"
         echo "SEMVER_TAG_OUTCOME: ${SEMVER_TAG_OUTCOME}"
+        echo "SEMVER_TAG_OUTCOME_VAR: ${SEMVER_TAG_OUTCOME_VAR}"
         echo "CONDITION: ${CONDITION}"
+        echo "CONDITION_VAR: ${CONDITION_VAR}"
         echo -e "\n\n\n---\n\n\n"
         env | sort
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
     env:
       PULL_REQUEST_TARGET_BRANCH: ${{ parameters['pullRequestTargetBranch'] }}
+      PULL_REQUEST_TARGET_BRANCH_VAR: $(pullRequestTargetBranch)
       REPOSITORY_HAS_SEMVER_TAG: ${{ parameters['repositoryHasSemverTag'] }}
+      REPOSITORY_HAS_SEMVER_TAG_VAR: $(repositoryHasSemverTag)
       TARGET_BRANCH_OUTCOME: ${{ eq(parameters['pullRequestTargetBranch'], 'main') }}
+      TARGET_BRANCH_OUTCOME_VAR: $(pullRequestTargetBranch)
       SEMVER_TAG_OUTCOME: ${{ eq(parameters['repositoryHasSemverTag'], 'true') }}
+      SEMVER_TAG_OUTCOME_VAR: $(HasSemverTag.HasSemverTag)
       CONDITION: ${{ or(eq(parameters.pullRequestTargetBranch, 'main'), eq(parameters.repositoryHasSemverTag, 'true')) }}
+      CONDITION_VAR: ${{ or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true')) }}
 
   - task: AzureClI@2
     displayName: Validate Branch Name
