@@ -34,7 +34,7 @@ steps:
   - task: AzureClI@2
     displayName: Validate Branch Name
     name: ValidateBranchName
-    condition: or(eq('${{ parameters.pullRequestTargetBranch }}'', 'main'), eq('${{ parameters.repositoryHasSemverTag }}', 'true'))
+    condition: or(eq('${{ parameters.pullRequestTargetBranch }}', 'main'), eq('${{ parameters.repositoryHasSemverTag }}', 'true'))
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
