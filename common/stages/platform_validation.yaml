@@ -39,7 +39,7 @@ stages:
                 addSpnToEnvironment: true
               env:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
-                HAS_SEMVER_TAG: $(HasSemverTag.HasSemverTag)
+                HAS_SEMVER_TAG: $(HasSemverTag)
                 FORCE_BRANCH_NAME_VALIDATION: ${{ parameters.forceBranchNameValidation }}
             - ${{ if eq(variables.pullRequestTargetBranch, 'main') }}:
               - task: AzureClI@2
@@ -73,7 +73,7 @@ stages:
                   addSpnToEnvironment: true
                 env:
                   OUTCOME: $(pullRequestTargetBranch)
-            - ${{ if eq(variables['HasSemverTag.HasSemverTag'], 'true') }}:
+            - ${{ if eq(variables['HasSemverTag'], 'true') }}:
               - task: AzureClI@2
                 name: SemverCheck
                 displayName: SemverCheck
@@ -83,12 +83,12 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(variables['HasSemverTag.HasSemverTag'], 'true')"
+                    echo "eq(variables['HasSemverTag'], 'true')"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: $(serviceConnection)
                   addSpnToEnvironment: true
                 env:
-                  OUTCOME: $(HasSemverTag.HasSemverTag)
+                  OUTCOME: $(HasSemverTag)
             - ${{ else }}:
               - task: AzureClI@2
                 name: SemverCheckFailed
@@ -99,13 +99,13 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(variables['HasSemverTag.HasSemverTag'], 'true') FAILED"
+                    echo "eq(variables['HasSemverTag'], 'true') FAILED"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: $(serviceConnection)
                   addSpnToEnvironment: true
                 env:
-                  OUTCOME: $(HasSemverTag.HasSemverTag)
-            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true')) }}:
+                  OUTCOME: $(HasSemverTag)
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag'], 'true')) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
                   serviceConnection: $(serviceConnection)
