@@ -49,7 +49,7 @@ stages:
                 addSpnToEnvironment: true
               env:
                 PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
-            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'refs/heads/main'), parameters['forceBranchNameValidationForNonMainPullRequests']) }}:
+            - ${{ if or(eq(variables['pullRequestTargetBranch'], 'main'), parameters['forceBranchNameValidationForNonMainPullRequests']) }}:
               - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceBranchNameValidation']) }}:
                 - template: /common/steps/launch_validate_branch_name.yaml
                   parameters:
