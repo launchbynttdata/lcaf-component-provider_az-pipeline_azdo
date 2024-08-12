@@ -35,7 +35,7 @@ stages:
               parameters:
                 serviceConnection: $(serviceConnection)
             - ${{ if eq(variables['pullRequestTargetBranch'], 'refs/heads/main') }}:
-              - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), eq(parameters['forceSemanticVersioning'])) }}:
+              - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceSemanticVersioning']) }}:
                 - template: /common/steps/launch_version_apply.yaml
                   parameters:
                     serviceConnection: $(serviceConnection)
