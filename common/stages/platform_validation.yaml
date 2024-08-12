@@ -21,7 +21,7 @@ stages:
   - stage: BranchNameValidation
     displayName: Branch Name Validation
     jobs:
-      - template: common/jobs/generic-job.yaml
+      - template: /common/jobs/generic-job.yaml
         parameters:
           jobName: PlatformValidation
           jobDisplayName: Platform Validation
