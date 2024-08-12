@@ -46,7 +46,7 @@ stages:
               env:
                 PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
                 HAS_SEMVER_TAG: $(HasSemverTag)
-            - ${{ if eq(parameters.pullRequestTargetBranch, 'refs/heads/main') }}:
+            - ${{ if eq(parameters.pullRequestTargetBranch, 'main') }}:
               - task: AzureClI@2
                 name: MainCheck
                 displayName: MainCheck
@@ -56,7 +56,7 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(parameters.pullRequestTargetBranch, 'refs/heads/main')"
+                    echo "eq(parameters.pullRequestTargetBranch, 'main')"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: ${{ parameters.serviceConnection }}
                   addSpnToEnvironment: true
@@ -72,7 +72,7 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)
                   inlineScript: |
                     export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(parameters.pullRequestTargetBranch, 'refs/heads/main') FAILED"
+                    echo "eq(parameters.pullRequestTargetBranch, 'main') FAILED"
                     echo OUTCOME=$OUTCOME
                   azureSubscription: ${{ parameters.serviceConnection }}
                   addSpnToEnvironment: true
@@ -110,7 +110,7 @@ stages:
                   addSpnToEnvironment: true
                 env:
                   OUTCOME: $(HasSemverTag)
-            - ${{ if or(eq(parameters.pullRequestTargetBranch, 'refs/heads/main'), eq(variables['HasSemverTag'], 'true')) }}:
+            - ${{ if or(eq(parameters.pullRequestTargetBranch, 'main'), eq(variables['HasSemverTag'], 'true')) }}:
               - template: /common/steps/launch_validate_branch_name.yaml
                 parameters:
                   serviceConnection: ${{ parameters.serviceConnection }}
