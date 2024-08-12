@@ -36,4 +36,4 @@ stages:
                 buildSourceBranch: ${{ parameters.buildSourceBranch }}
                 pullRequestSourceBranch: ${{ parameters.pullRequestSourceBranch }}
                 pullRequestTargetBranch: ${{ parameters.pullRequestTargetBranch }}
-                repositoryHasSemverTag: $(HasSemverTag)
+                repositoryHasSemverTag: $(HasSemverTag.HasSemverTag)
