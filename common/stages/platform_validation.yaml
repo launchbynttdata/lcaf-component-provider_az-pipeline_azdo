@@ -12,6 +12,8 @@ parameters:
     type: string
   - name: buildSourceBranch
     type: string
+  - name: pullRequestSourceBranch
+    type: string
   - name: pullRequestTargetBranch
     type: string
 
@@ -29,89 +31,106 @@ stages:
               parameters:
                 serviceConnection: ${{ parameters.serviceConnection }}
             - task: AzureClI@2
-              name: Debug
-              displayName: Debug
+              displayName: Launch Validate Branch Name
+              name: validate_branch_name
+              condition: or(eq(parameters.pullRequestTargetBranch, 'main'), eq(variables['HasSemverTag'], 'true'))
               inputs:
                 scriptType: bash
                 scriptLocation: inlineScript
-                workingDirectory: $(System.DefaultWorkingDirectory)
+                workingDirectory: $(Pipeline.Workspace)/$(Build.Repository.Name)
                 inlineScript: |
                   export PATH=/home/launch/env/bin:$PATH
-                  echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
-                  echo HAS_SEMVER_TAG=$HAS_SEMVER_TAG
-                  echo "---"
-                  env | sort
+                  echo "BUILD_SOURCE_BRANCH: ${BUILD_SOURCE_BRANCH}"
+                  echo "PULL_REQUEST_SOURCE_BRANCH: ${PULL_REQUEST_SOURCE_BRANCH}"
+                  SOURCE_BRANCH=${PULL_REQUEST_SOURCE_BRANCH:-${BRANCH_NAME}}
+                  echo "SOURCE_BRANCH: ${SOURCE_BRANCH}"
+                  # If we get a non-main branch, we need to validate the name using launch-cli.
+                  [ $SOURCE_BRANCH == 'main' ] || launch validate branch-name --branch-name "${SOURCE_BRANCH}"
                 azureSubscription: ${{ parameters.serviceConnection }}
                 addSpnToEnvironment: true
               env:
-                PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
-                HAS_SEMVER_TAG: $(HasSemverTag)
-            - ${{ if eq(parameters.pullRequestTargetBranch, 'main') }}:
-              - task: AzureClI@2
-                name: MainCheck
-                displayName: MainCheck
-                inputs:
-                  scriptType: bash
-                  scriptLocation: inlineScript
-                  workingDirectory: $(System.DefaultWorkingDirectory)
-                  inlineScript: |
-                    export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(parameters.pullRequestTargetBranch, 'main')"
-                    echo OUTCOME=$OUTCOME
-                  azureSubscription: ${{ parameters.serviceConnection }}
-                  addSpnToEnvironment: true
-                env:
-                  OUTCOME: ${{ parameters.pullRequestTargetBranch }}
-            - ${{ else }}:
-              - task: AzureClI@2
-                name: MainCheckFailed
-                displayName: MainCheckFailed
-                inputs:
-                  scriptType: bash
-                  scriptLocation: inlineScript
-                  workingDirectory: $(System.DefaultWorkingDirectory)
-                  inlineScript: |
-                    export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(parameters.pullRequestTargetBranch, 'main') FAILED"
-                    echo OUTCOME=$OUTCOME
-                  azureSubscription: ${{ parameters.serviceConnection }}
-                  addSpnToEnvironment: true
-                env:
-                  OUTCOME: ${{ parameters.pullRequestTargetBranch }}
-            - ${{ if eq(variables['HasSemverTag'], 'true') }}:
-              - task: AzureClI@2
-                name: SemverCheck
-                displayName: SemverCheck
-                inputs:
-                  scriptType: bash
-                  scriptLocation: inlineScript
-                  workingDirectory: $(System.DefaultWorkingDirectory)
-                  inlineScript: |
-                    export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(variables['HasSemverTag'], 'true')"
-                    echo OUTCOME=$OUTCOME
-                  azureSubscription: ${{ parameters.serviceConnection }}
-                  addSpnToEnvironment: true
-                env:
-                  OUTCOME: $(HasSemverTag)
-            - ${{ else }}:
-              - task: AzureClI@2
-                name: SemverCheckFailed
-                displayName: SemverCheckFailed
-                inputs:
-                  scriptType: bash
-                  scriptLocation: inlineScript
-                  workingDirectory: $(System.DefaultWorkingDirectory)
-                  inlineScript: |
-                    export PATH=/home/launch/env/bin:$PATH
-                    echo "eq(variables['HasSemverTag'], 'true') FAILED"
-                    echo OUTCOME=$OUTCOME
-                  azureSubscription: ${{ parameters.serviceConnection }}
-                  addSpnToEnvironment: true
-                env:
-                  OUTCOME: $(HasSemverTag)
-            - ${{ if or(eq(parameters.pullRequestTargetBranch, 'main'), eq(variables['HasSemverTag'], 'true')) }}:
-              - template: /common/steps/launch_validate_branch_name.yaml
-                parameters:
-                  serviceConnection: ${{ parameters.serviceConnection }}
-                  pullRequestSourceBranch: $(pullRequestSourceBranch)
+                BUILD_SOURCE_BRANCH: ${{ parameters.buildSourceBranch }}
+                PULL_REQUEST_SOURCE_BRANCH: ${{ parameters.pullRequestSourceBranch }}
+            # - task: AzureClI@2
+            #   name: Debug
+            #   displayName: Debug
+            #   inputs:
+            #     scriptType: bash
+            #     scriptLocation: inlineScript
+            #     workingDirectory: $(System.DefaultWorkingDirectory)
+            #     inlineScript: |
+            #       export PATH=/home/launch/env/bin:$PATH
+            #       echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
+            #       echo HAS_SEMVER_TAG=$HAS_SEMVER_TAG
+            #       echo "---"
+            #       env | sort
+            #     azureSubscription: ${{ parameters.serviceConnection }}
+            #     addSpnToEnvironment: true
+            #   env:
+            #     PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
+            #     HAS_SEMVER_TAG: $(HasSemverTag)
+            # - ${{ if eq(parameters.pullRequestTargetBranch, 'main') }}:
+            #   - task: AzureClI@2
+            #     name: MainCheck
+            #     displayName: MainCheck
+            #     inputs:
+            #       scriptType: bash
+            #       scriptLocation: inlineScript
+            #       workingDirectory: $(System.DefaultWorkingDirectory)
+            #       inlineScript: |
+            #         export PATH=/home/launch/env/bin:$PATH
+            #         echo "eq(parameters.pullRequestTargetBranch, 'main')"
+            #         echo OUTCOME=$OUTCOME
+            #       azureSubscription: ${{ parameters.serviceConnection }}
+            #       addSpnToEnvironment: true
+            #     env:
+            #       OUTCOME: ${{ parameters.pullRequestTargetBranch }}
+            # - ${{ else }}:
+            #   - task: AzureClI@2
+            #     name: MainCheckFailed
+            #     displayName: MainCheckFailed
+            #     inputs:
+            #       scriptType: bash
+            #       scriptLocation: inlineScript
+            #       workingDirectory: $(System.DefaultWorkingDirectory)
+            #       inlineScript: |
+            #         export PATH=/home/launch/env/bin:$PATH
+            #         echo "eq(parameters.pullRequestTargetBranch, 'main') FAILED"
+            #         echo OUTCOME=$OUTCOME
+            #       azureSubscription: ${{ parameters.serviceConnection }}
+            #       addSpnToEnvironment: true
+            #     env:
+            #       OUTCOME: ${{ parameters.pullRequestTargetBranch }}
+            # - ${{ if eq(variables['HasSemverTag'], 'true') }}:
+            #   - task: AzureClI@2
+            #     name: SemverCheck
+            #     displayName: SemverCheck
+            #     inputs:
+            #       scriptType: bash
+            #       scriptLocation: inlineScript
+            #       workingDirectory: $(System.DefaultWorkingDirectory)
+            #       inlineScript: |
+            #         export PATH=/home/launch/env/bin:$PATH
+            #         echo "eq(variables['HasSemverTag'], 'true')"
+            #         echo OUTCOME=$OUTCOME
+            #       azureSubscription: ${{ parameters.serviceConnection }}
+            #       addSpnToEnvironment: true
+            #     env:
+            #       OUTCOME: $(HasSemverTag)
+            # - ${{ else }}:
+            #   - task: AzureClI@2
+            #     name: SemverCheckFailed
+            #     displayName: SemverCheckFailed
+            #     inputs:
+            #       scriptType: bash
+            #       scriptLocation: inlineScript
+            #       workingDirectory: $(System.DefaultWorkingDirectory)
+            #       inlineScript: |
+            #         export PATH=/home/launch/env/bin:$PATH
+            #         echo "eq(variables['HasSemverTag'], 'true') FAILED"
+            #         echo OUTCOME=$OUTCOME
+            #       azureSubscription: ${{ parameters.serviceConnection }}
+            #       addSpnToEnvironment: true
+            #     env:
+            #       OUTCOME: $(HasSemverTag)
+
