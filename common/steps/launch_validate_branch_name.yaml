@@ -6,7 +6,7 @@ parameters:
   - name: pullRequestSourceBranch
     type: string
   - name: repositoryHasSemverTag
-    type: boolean
+    type: string
     default: false
   - name: pullRequestTargetBranch
     type: string
