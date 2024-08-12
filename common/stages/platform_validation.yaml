@@ -39,7 +39,6 @@ stages:
                   export PATH=/home/launch/env/bin:$PATH
                   echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
                   echo HAS_SEMVER_TAG=$HAS_SEMVER_TAG
-                  echo FORCE_BRANCH_NAME_VALIDATION=$FORCE_BRANCH_NAME_VALIDATION
                   echo "---"
                   env | sort
                 azureSubscription: ${{ parameters.serviceConnection }}
@@ -47,7 +46,6 @@ stages:
               env:
                 PULL_REQUEST_TARGET_BRANCH: ${{ parameters.pullRequestTargetBranch }}
                 HAS_SEMVER_TAG: $(HasSemverTag)
-                FORCE_BRANCH_NAME_VALIDATION: ${{ parameters.forceBranchNameValidation }}
             - ${{ if eq(parameters.pullRequestTargetBranch, 'refs/heads/main') }}:
               - task: AzureClI@2
                 name: MainCheck
