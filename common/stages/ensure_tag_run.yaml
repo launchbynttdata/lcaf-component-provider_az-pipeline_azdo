@@ -2,9 +2,6 @@
 # The following variables must be present in the current scope for this job to run:
 #  agentPool: The name of the ADO Agent pool to run the job on.
 #  serviceConnection: The name of the Service Connection to utilize
-#  buildSourceBranch: The branch of the triggering repo the build was queued for.
-#  pullRequestSourceBranch: The name of the source branch for a pull request.
-#  pullRequestTargetBranch: The name of the target branch for a pull request.
 
 stages:
   - stage: BuildTagValidation
@@ -27,7 +24,7 @@ stages:
                   export PATH=/home/launch/env/bin:$PATH
                   TAGGED=$(echo $SOURCE_BRANCH | grep -P "^refs/tags/")
                   [[ -n $TAGGED ]] || (echo "##vso[task.logissue type=error]CD pipeline can only be run against a tag, not a branch or commit." ; exit 1)
-                azureSubscription: ${{ parameters.serviceConnection }}
+                azureSubscription: $(serviceConnection)
                 addSpnToEnvironment: true
               env:
                 SOURCE_BRANCH: $(Build.SourceBranch)
