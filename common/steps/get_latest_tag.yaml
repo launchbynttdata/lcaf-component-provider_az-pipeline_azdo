@@ -1,0 +1,22 @@
+# Retrieves the tag associated with the HEAD of the current branch 
+
+parameters:
+  - name: serviceConnection
+    type: string
+
+steps:
+  - task: AzureClI@2
+    name: GetLatestTagFromHEAD
+    displayName: Retrieve Latest Tag from HEAD
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        export PATH=/home/launch/env/bin:$PATH
+        HEAD_SEMVER_TAG=$(git tag --points-at HEAD | grep -P "^\d+\.\d+\.\d+$" | sort -rV | head -n 1)
+        HEAD_BUILD_ID_TAG=$(git tag --points-at HEAD | grep -P "^\d+$" | sort -rV | head -n 1)
+        LATEST_TAG=${HEAD_SEMVER_TAG:-${HEAD_BUILD_ID_TAG}}
+        echo "##vso[task.setvariable variable=LatestTag;]$LATEST_TAG"
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
