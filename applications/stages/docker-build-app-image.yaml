@@ -35,7 +35,7 @@ parameters:
 stages:
   - stage: build_image
     displayName: Build Image
-    dependsOn: ${{parameter.dependsOn}}
+    dependsOn: ${{ parameters.dependsOn }}
     jobs:
       - template: /common/jobs/generic-job.yaml
         parameters:
