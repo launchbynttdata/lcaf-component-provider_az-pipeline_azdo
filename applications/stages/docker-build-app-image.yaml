@@ -28,10 +28,14 @@ parameters:
   - name: push
     type: boolean
     default: true
+  - name: dependsOn
+    type: object
+    default: []
 
 stages:
   - stage: build_image
     displayName: Build Image
+    dependsOn: ${{parameter.dependsOn}}
     jobs:
       - template: /common/jobs/generic-job.yaml
         parameters:
