@@ -1,54 +1,11 @@
-parameters:
-  - name: serviceConnection
-    type: string
-  - name: buildSourceBranch
-    type: string
-  - name: pullRequestSourceBranch
-    type: string
-  - name: pullRequestTargetBranch
-    type: string
-  - name: repositoryHasSemverTag
-    type: string
-    default: false
+# This step template will validate the branch name meets our requirements for automated versioning.
+# The following variables must be present in the current scope for this job to run:
+#  serviceConnection: The name of the Service Connection to utilize
+#  buildSourceBranch: The branch of the triggering repo the build was queued for.
+#  pullRequestSourceBranch: The name of the source branch for a pull request.
+#  pullRequestTargetBranch: The name of the target branch for a pull request.
 
 steps:
-  - task: AzureClI@2
-    displayName: Debug
-    name: Debug
-    inputs:
-      scriptType: bash
-      scriptLocation: inlineScript
-      workingDirectory: $(Pipeline.Workspace)/$(Build.Repository.Name)
-      inlineScript: |
-        export PATH=/home/launch/env/bin:$PATH
-        echo "PULL_REQUEST_TARGET_BRANCH: ${PULL_REQUEST_TARGET_BRANCH}"
-        echo "REPOSITORY_HAS_SEMVER_TAG: ${REPOSITORY_HAS_SEMVER_TAG}"
-        echo "TARGET_BRANCH_OUTCOME: ${TARGET_BRANCH_OUTCOME}"        
-        echo "SEMVER_TAG_OUTCOME: ${SEMVER_TAG_OUTCOME}"
-        echo "CONDITION: ${CONDITION}"
-        echo -e "\n\n---\n\n"
-        echo "PULL_REQUEST_TARGET_BRANCH_VAR: ${PULL_REQUEST_TARGET_BRANCH_VAR}"
-        echo "REPOSITORY_HAS_SEMVER_TAG_VAR: ${REPOSITORY_HAS_SEMVER_TAG_VAR}"
-        echo "TARGET_BRANCH_OUTCOME_VAR: ${TARGET_BRANCH_OUTCOME_VAR}"
-        echo "SEMVER_TAG_OUTCOME_VAR: ${SEMVER_TAG_OUTCOME_VAR}"
-        echo "CONDITION_VAR: ${CONDITION_VAR}"
-        echo -e "\n\n---\n\n"
-        env | sort
-      azureSubscription: ${{ parameters.serviceConnection }}
-      addSpnToEnvironment: true
-    env:
-      PULL_REQUEST_TARGET_BRANCH: ${{ parameters['pullRequestTargetBranch'] }}
-      REPOSITORY_HAS_SEMVER_TAG: ${{ parameters['repositoryHasSemverTag'] }}
-      TARGET_BRANCH_OUTCOME: ${{ eq(parameters['pullRequestTargetBranch'], 'main') }}
-      SEMVER_TAG_OUTCOME: ${{ eq(parameters['repositoryHasSemverTag'], 'true') }}
-      CONDITION: $[ or(eq(parameters.pullRequestTargetBranch, 'main'), eq(parameters.repositoryHasSemverTag, 'true')) ]
-      # ---
-      PULL_REQUEST_TARGET_BRANCH_VAR: $(pullRequestTargetBranch)
-      REPOSITORY_HAS_SEMVER_TAG_VAR: $(repositoryHasSemverTag)
-      TARGET_BRANCH_OUTCOME_VAR: ${{ eq(variables['pullRequestTargetBranch'], 'main') }}
-      SEMVER_TAG_OUTCOME_VAR: ${{ eq(variables['HasSemverTag.HasSemverTag'], 'true') }}
-      CONDITION_VAR: ${{ or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true')) }}
-
   - task: AzureClI@2
     displayName: Validate Branch Name
     name: ValidateBranchName
@@ -65,8 +22,8 @@ steps:
         echo "SOURCE_BRANCH: ${SOURCE_BRANCH}"
         # If we get a non-main branch, we need to validate the name using launch-cli.
         [ $SOURCE_BRANCH == 'main' ] || launch validate branch-name --branch-name "${SOURCE_BRANCH}"
-      azureSubscription: ${{ parameters.serviceConnection }}
+      azureSubscription: $(serviceConnection)
       addSpnToEnvironment: true
     env:
-      BUILD_SOURCE_BRANCH: ${{ parameters.buildSourceBranch }}
-      PULL_REQUEST_SOURCE_BRANCH: ${{ parameters.pullRequestSourceBranch }}
+      BUILD_SOURCE_BRANCH: $(buildSourceBranch)
+      PULL_REQUEST_SOURCE_BRANCH: $(pullRequestSourceBranch)

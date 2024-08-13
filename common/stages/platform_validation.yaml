@@ -3,19 +3,8 @@
 #  poolName: The name of the ADO Agent pool to run the job on.
 #  serviceConnection: The name of the Service Connection to utilize
 #  buildSourceBranch: The branch of the triggering repo the build was queued for.
+#  pullRequestSourceBranch: The name of the source branch for a pull request.
 #  pullRequestTargetBranch: The name of the target branch for a pull request.
-
-parameters:
-  - name: poolName
-    type: string
-  - name: serviceConnection
-    type: string
-  - name: buildSourceBranch
-    type: string
-  - name: pullRequestSourceBranch
-    type: string
-  - name: pullRequestTargetBranch
-    type: string
 
 stages:
   - stage: BranchNameValidation
@@ -25,15 +14,10 @@ stages:
         parameters:
           jobName: PlatformValidation
           jobDisplayName: Platform Validation
-          poolName: ${{ parameters.poolName }}
+          poolName: $(poolName)
           steps:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
-                serviceConnection: ${{ parameters.serviceConnection }}
+                serviceConnection: $(serviceConnection)
             - template: /common/steps/launch_validate_branch_name.yaml
-              parameters:
-                serviceConnection: ${{ parameters.serviceConnection }}
-                buildSourceBranch: ${{ parameters.buildSourceBranch }}
-                pullRequestSourceBranch: ${{ parameters.pullRequestSourceBranch }}
-                pullRequestTargetBranch: ${{ parameters.pullRequestTargetBranch }}
-                repositoryHasSemverTag: $(HasSemverTag.HasSemverTag)
+
