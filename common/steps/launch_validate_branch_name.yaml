@@ -41,7 +41,7 @@ steps:
       REPOSITORY_HAS_SEMVER_TAG: ${{ parameters['repositoryHasSemverTag'] }}
       TARGET_BRANCH_OUTCOME: ${{ eq(parameters['pullRequestTargetBranch'], 'main') }}
       SEMVER_TAG_OUTCOME: ${{ eq(parameters['repositoryHasSemverTag'], 'true') }}
-      CONDITION: ${{ or(eq(parameters.pullRequestTargetBranch, 'main'), eq(parameters.repositoryHasSemverTag, 'true')) }}
+      CONDITION: $[ or(eq(parameters.pullRequestTargetBranch, 'main'), eq(parameters.repositoryHasSemverTag, 'true')) ]
       # ---
       PULL_REQUEST_TARGET_BRANCH_VAR: $(pullRequestTargetBranch)
       REPOSITORY_HAS_SEMVER_TAG_VAR: $(repositoryHasSemverTag)
