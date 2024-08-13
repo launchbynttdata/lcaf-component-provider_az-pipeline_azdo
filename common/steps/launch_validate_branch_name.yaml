@@ -9,7 +9,7 @@ steps:
   - task: AzureClI@2
     displayName: Validate Branch Name
     name: ValidateBranchName
-    condition: or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true'))
+    condition: and(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true'))
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
