@@ -9,6 +9,7 @@
 stages:
   - stage: BranchNameValidation
     displayName: Branch Name Validation
+    condition: "eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')"
     jobs:
       - template: /common/jobs/generic-job.yaml
         parameters:

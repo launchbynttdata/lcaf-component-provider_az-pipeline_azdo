@@ -7,9 +7,9 @@
 
 steps:
   - task: AzureClI@2
-    displayName: Validate Branch Name
+    displayName: Validate Branch Name For Semantic Versioning
     name: ValidateBranchName
-    condition: and(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true'))
+    condition: "eq(variables['HasSemverTag.HasSemverTag'], 'true')"
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
