@@ -47,7 +47,7 @@ steps:
       REPOSITORY_HAS_SEMVER_TAG_VAR: $(repositoryHasSemverTag)
       TARGET_BRANCH_OUTCOME_VAR: ${{ eq(variables['pullRequestTargetBranch'], 'main') }}
       SEMVER_TAG_OUTCOME_VAR: ${{ eq(variables['HasSemverTag.HasSemverTag'], 'true') }}
-      CONDITION_VAR: ${{ or(eq(, 'main'), eq(, 'true')) }}
+      CONDITION_VAR: ${{ or(eq(variables['pullRequestTargetBranch'], 'main'), eq(variables['HasSemverTag.HasSemverTag'], 'true')) }}
 
   - task: AzureClI@2
     displayName: Validate Branch Name
