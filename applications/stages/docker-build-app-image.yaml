@@ -25,6 +25,9 @@ parameters:
   - name: dockerImageName
     type: string
     default: ''
+  - name: push
+    type: boolean
+    default: true
 
 stages:
   - stage: build_image
