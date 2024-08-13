@@ -1,13 +1,17 @@
+# This template will create a semantic version tag utilizing the source branch name obtained from the last-merged PR.
+# The following variables must be present in the current scope for this job to run:
+#  serviceConnection: The name of the Service Connection to utilize
+#  HasSemverTag.HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
+
 parameters:
-  - name: serviceConnection
-    type: string
   - name: adoUrl
     type: string
     default: https://fdc-devops.dc.state.fl.us/DefaultCollection/TRP
 
 steps:
   - task: AzureClI@2
-    displayName: Launch Github Version Apply
+    displayName: Create Semantic Version Tag
+    condition: "eq(variables['HasSemverTag.HasSemverTag'], 'true')"
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
@@ -26,7 +30,7 @@ steps:
         SOURCE_BRANCH_NAME=$(curl -H "$AUTHORIZATION_HEADER" -s ${{ parameters.adoUrl }}/_apis/git/pullrequests/$ORIGINATING_PULL_REQUEST_ID\?api-version\=7.0 | jq -r .sourceRefName | sed -e 's,refs/heads/,,g')
         echo "SOURCE_BRANCH_NAME: ${SOURCE_BRANCH_NAME}"
         launch github version apply --pipeline --source-branch $SOURCE_BRANCH_NAME
-      azureSubscription: ${{ parameters.serviceConnection }}
+      azureSubscription: $(serviceConnection)
       addSpnToEnvironment: true
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)

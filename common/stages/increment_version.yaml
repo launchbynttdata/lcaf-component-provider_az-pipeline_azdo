@@ -30,35 +30,10 @@ stages:
           poolName: $(agentPool)
           variables:
             - name: buildSourceBranch
-              value: $[replace(variables['buildSourceBranch'], 'refs/heads/', '')]
+              value: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
           steps:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
                 serviceConnection: $(serviceConnection)
-            - task: AzureClI@2
-              name: Debug
-              displayName: Debug
-              inputs:
-                scriptType: bash
-                scriptLocation: inlineScript
-                workingDirectory: $(System.DefaultWorkingDirectory)
-                inlineScript: |
-                  export PATH=/home/launch/env/bin:$PATH
-                  echo PULL_REQUEST_TARGET_BRANCH=$PULL_REQUEST_TARGET_BRANCH
-                  echo BUILD_SOURCE_BRANCH=$BUILD_SOURCE_BRANCH
-                  echo "---"
-                  env | sort
-                azureSubscription: $(serviceConnection)
-                addSpnToEnvironment: true
-              env:
-                BUILD_SOURCE_BRANCH: $(buildSourceBranch)
-                PULL_REQUEST_TARGET_BRANCH: $(pullRequestTargetBranch)
-            # - ${{ if eq(variables['pullRequestTargetBranch'], 'main') }}:
-            #   - ${{ if or(eq(variables['HasSemverTag.HasSemverTag'], 'true'), parameters['forceSemanticVersioning']) }}:
-            #     - template: /common/steps/launch_version_apply.yaml
-            #       parameters:
-            #         serviceConnection: $(serviceConnection)
-            #   - ${{ else }}:
-            #     - template: /common/steps/create_git_tag.yaml
-            #       parameters:
-            #         tag: $(buildId)
+            - template: /common/steps/create_semver_tag.yaml
+            - template: /common/steps/create_buildid_tag.yaml

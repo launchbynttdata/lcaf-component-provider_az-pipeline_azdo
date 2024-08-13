@@ -1,0 +1,26 @@
+# This template will create a tag matching the current Build ID.
+# The following variables must be present in the current scope for this job to run:
+#  serviceConnection: The name of the Service Connection to utilize
+#  HasSemverTag.HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
+
+parameters:
+  - name: adoUrl
+    type: string
+    default: https://fdc-devops.dc.state.fl.us/DefaultCollection/TRP
+
+steps:
+  - task: AzureClI@2
+    displayName: Create Build ID Version Tag
+    condition: "eq(variables['HasSemverTag.HasSemverTag'], 'false')"
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        echo "Creating tag $BUILD_BUILDID for Build $BUILD_BUILDNUMBER"
+        git tag $BUILD_BUILDID
+        git push origin $BUILD_BUILDID
+      azureSubscription: $(serviceConnection)
+      addSpnToEnvironment: true
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
