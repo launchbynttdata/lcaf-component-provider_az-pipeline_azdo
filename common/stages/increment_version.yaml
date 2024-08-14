@@ -21,7 +21,7 @@ parameters:
 stages:
   - stage: AutomatedVersionUpdate
     displayName: Automated Version Update
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'Manual'))
     jobs:
       - template: /common/jobs/generic-job.yaml
         parameters:
