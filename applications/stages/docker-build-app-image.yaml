@@ -7,7 +7,6 @@
 #  - name: distPath - the directory containing the build artifacts. Default is 'dist/'
 #  - name: serviceConnection - the ADO service connection to use to login to the container registroy
 #  - name: dockerImageName - the name of the docker image. Default is the name of the repository
-#  - name: dockerImageTag - the tag(s) of the docker image. Default is the build id and 'latest'
 
 parameters:
   - name: poolName
@@ -59,6 +58,6 @@ stages:
                   dockerImageName: ${{ parameters.dockerImageName }}
                 ${{ else }}:
                   dockerImageName: $(Build.Repository.Name)
-                  dockerImageTag: |
-                    $(LatestTag)
-                    latest
+                dockerImageTag: |
+                  $(LatestTag)
+                  latest
