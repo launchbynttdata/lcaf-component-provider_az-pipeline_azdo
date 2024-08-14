@@ -1,0 +1,28 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: acrName
+    type: string
+  - name: poolName
+    type: string
+
+stages:
+  - stage: publish_helm_chart_acr
+    displayName: Publish Helm Chart to ACR
+    jobs:
+      - template: /common/jobs/generic-job.yaml
+        parameters:
+          jobName: publish_helm_chart_acr
+          jobDisplayName: Publish Helm Chart
+          poolName: ${{ parameters.poolName }}
+          workspace:
+            clean: all
+          steps:
+            - template: /applications/steps/helm-acr-login.yaml
+              parameters:
+                serviceConnection: ${{ parameters.serviceConnection }}
+                acrName: ${{ parameters.acrName }}
+            - template: /applications/steps/publish-helm-chart-acr.yaml
+              parameters:
+                serviceConnection: ${{ parameters.serviceConnection }}
+                acrName: ${{ parameters.acrName }}
