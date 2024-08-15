@@ -20,5 +20,6 @@ stages:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
                 serviceConnection: $(serviceConnection)
+                outputVariableName: HasSemverTag
             - template: /common/steps/launch_validate_branch_name.yaml
 
