@@ -33,6 +33,7 @@ steps:
 
     - task: dependency-check-build-task@6
       displayName: 'Run dependency check'
+      retryCountOnTaskFailure: 2
       inputs:
         projectName: '$(Build.Repository.Name)'
         scanPath: ${{ parameters.scanPath }}
