@@ -22,7 +22,7 @@ steps:
         SOURCE_BRANCH=${PULL_REQUEST_SOURCE_BRANCH:-${BUILD_SOURCE_BRANCH}}
         echo "SOURCE_BRANCH: ${SOURCE_BRANCH}"
         # If we get a non-main branch, we need to validate the name using launch-cli.
-        [ $SOURCE_BRANCH == 'main' ] || launch validate branch-name --branch-name "${SOURCE_BRANCH}" || "##vso[task.logissue type=error]Source Branch name is invalid."; exit 1
+        [ $SOURCE_BRANCH == 'main' ] || launch validate branch-name --branch-name "${SOURCE_BRANCH}" || (echo "##vso[task.logissue type=error]Source Branch name is invalid."; exit 1)
       azureSubscription: $(serviceConnection)
       addSpnToEnvironment: true
     env:
