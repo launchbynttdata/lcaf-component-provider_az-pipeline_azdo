@@ -35,5 +35,6 @@ stages:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
                 serviceConnection: $(serviceConnection)
+                outputVariableName: HasSemverTag
             - template: /common/steps/create_semver_tag.yaml
             - template: /common/steps/create_buildid_tag.yaml

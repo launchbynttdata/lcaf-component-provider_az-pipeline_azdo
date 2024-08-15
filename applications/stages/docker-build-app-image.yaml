@@ -47,6 +47,7 @@ stages:
             - template: /common/steps/get_latest_tag.yaml
               parameters:
                 serviceConnection: ${{ parameters.serviceConnection }}
+                outputVariableName: LatestTag
             - template: /applications/steps/local-build-and-push-docker-image.yaml
               parameters:
                 acrRegistry: ${{ parameters.imageRepository }}

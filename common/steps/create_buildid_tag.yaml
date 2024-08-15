@@ -1,7 +1,7 @@
 # This template will create a tag matching the current Build ID.
 # The following variables must be present in the current scope for this job to run:
 #  serviceConnection: The name of the Service Connection to utilize
-#  HasSemverTag.HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
+#  HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
 
 parameters:
   - name: adoUrl
@@ -11,7 +11,7 @@ parameters:
 steps:
   - task: AzureClI@2
     displayName: Create Build ID Version Tag
-    condition: "eq(variables['HasSemverTag.HasSemverTag'], 'false')"
+    condition: "eq(variables['HasSemverTag'], 'false')"
     inputs:
       scriptType: bash
       scriptLocation: inlineScript

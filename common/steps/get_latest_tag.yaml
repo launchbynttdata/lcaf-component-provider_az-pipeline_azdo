@@ -3,6 +3,8 @@
 parameters:
   - name: serviceConnection
     type: string
+  - name: outputVariableName
+    type: string
 
 steps:
   - task: AzureClI@2
@@ -17,6 +19,8 @@ steps:
         HEAD_SEMVER_TAG=$(git tag --points-at HEAD | grep -P "^\d+\.\d+\.\d+$" | sort -rV | head -n 1)
         HEAD_BUILD_ID_TAG=$(git tag --points-at HEAD | grep -P "^\d+$" | sort -rV | head -n 1)
         LATEST_TAG=${HEAD_SEMVER_TAG:-${HEAD_BUILD_ID_TAG}}
-        echo "##vso[task.setvariable variable=LatestTag;]$LATEST_TAG"
+        echo "##vso[task.setvariable variable=$OUTPUT_VARIABLE_NAME;]$LATEST_TAG"
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
+    env:
+      OUTPUT_VARIABLE_NAME: ${{ parameters.outputVariableName }}
