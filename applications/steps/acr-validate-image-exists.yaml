@@ -1,0 +1,24 @@
+parameters:
+  - name: dockerImageName
+    type: string
+    default: false
+  - name: dockerImageTag
+    type: string
+    default: false
+  - name: acrRegistry
+    type: string
+    default: false
+  - name: serviceConnection
+    type: string
+    default: false
+
+steps:
+  - task: AzureCLI@2
+    displayName: 'Validate ACR Image Exists'
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        echo 'Validating existence of ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }}'
+        az acr manifest show ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }} || (echo "##vso[task.logissue type=error]Container image ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }} does not exist!."; exit 1)

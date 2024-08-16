@@ -103,7 +103,12 @@ stages:
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   acrName: ${{ deployEnv.acrName }}
-              #- checkout: self
+              - template: /applications/steps/acr-validate-image-exists.yaml
+                parameters:
+                  serviceConnection: ${{ variables.serviceConnection }}
+                  acrRegistry: ${{ deployEnv.acrName }}
+                  dockerImageName: ${{ deployEnv.imageName }}
+                  dockerImageTag: ${{ deployEnv.imageTag }}
               - template: ../steps/helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
