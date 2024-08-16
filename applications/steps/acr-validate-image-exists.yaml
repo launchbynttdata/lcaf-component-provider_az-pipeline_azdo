@@ -21,4 +21,4 @@ steps:
       scriptLocation: inlineScript
       inlineScript: |
         echo 'Validating existence of ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }}'
-        az acr manifest show ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }} || (echo "##vso[task.logissue type=error]Container image ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }} does not exist!."; exit 1)
+        az acr manifest show ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }} || (echo "##vso[task.logissue type=error]Container image ${{ parameters.acrRegistry }}/${{ parameters.dockerImageName }}:${{ parameters.dockerImageTag }} does not exist!"; exit 1)
