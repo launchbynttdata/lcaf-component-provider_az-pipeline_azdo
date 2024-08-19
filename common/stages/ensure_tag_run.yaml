@@ -1,7 +1,13 @@
 # This template will validate the branch name meets our requirements for automated versioning.
-# The following variables must be present in the current scope for this job to run:
-#  agentPool: The name of the ADO Agent pool to run the job on.
-#  serviceConnection: The name of the Service Connection to utilize
+# The branch name is determined from the Build.SourceBranch variable provided by Azure DevOps,
+# no other variables need to be present in scope for this step.
+
+# parameters:
+#  - name: serviceConnection - the ADO service connection to use to login to the container registry
+
+parameters:
+  - name: serviceConnection
+    type: string
 
 stages:
   - stage: BuildTagValidation
@@ -24,7 +30,7 @@ stages:
                   export PATH=/home/launch/env/bin:$PATH
                   TAGGED=$(echo $SOURCE_BRANCH | grep -P "^refs/tags/")
                   [[ -n $TAGGED ]] || (echo "##vso[task.logissue type=error]CD pipeline can only be run against a tag, not a branch or commit." ; exit 1)
-                azureSubscription: $(serviceConnection)
+                azureSubscription: ${{ parameters.serviceConnection }
                 addSpnToEnvironment: true
               env:
                 SOURCE_BRANCH: $(Build.SourceBranch)
