@@ -1,12 +1,12 @@
 # This template is a multistage template to deploy any  Helm chart stored in ACR. The serviceConnection must have permission to pull from ACR.
 # This helm deploy would only accept inputs in the form of a values.yaml file. --set commands can be passed in as additionalFields
-# If there are any secrets dependency, they can be passed in as secretFields in the format shown below. This pipeline will fetch the secrets 
+# If there are any secrets dependency, they can be passed in as secretFields in the format shown below. This pipeline will fetch the secrets
 # from the Key Vault and pass them to the helm chart with best efforts of not printing them in the pipeline or helm diff. The serviceConnection must have permission to read secrets
 # from the specified key vault.
 
 # This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
 # Expect the following variables to be available in the variable file
-# variables: 
+# variables:
 #   - name: serviceConnection
 #     value: 'ado-sp'
 #   - name: agentPool
@@ -57,7 +57,7 @@ stages:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
-        - template: ../../common/jobs/generic-job.yaml
+        - template: /common/jobs/generic-job.yaml
           parameters:
             jobName: ${{ deployEnv.environment }}_${{ deployEnv.region }}_PreDeployJob
             jobDisplayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} - Pre deploy'
@@ -66,18 +66,18 @@ stages:
             workspace:
               clean: all
             steps:
-              - template: ../steps/get-kubernetes-credentials.yaml
+              - template: /applications/steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
                   aksCluster: ${{ variables.aksCluster }}
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/helm-acr-login.yaml
+              - template: /applications/steps/helm-acr-login.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   acrName: ${{ variables.acrName }}
-              - template: ../steps/acr-chart-helm-diff.yaml
+              - template: /applications/steps/acr-chart-helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
@@ -101,7 +101,7 @@ stages:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
-        - template: ../../common/jobs/deploy-job.yaml
+        - template: /common/jobs/deploy-job.yaml
           parameters:
             jobName: ${{ deployEnv.environment }}_DeployJob
             jobDisplayName: '${{ deployEnv.environment }} - Deploy'
@@ -111,19 +111,19 @@ stages:
               clean: all
             azureEnvironment: ${{ deployEnv.azureEnvironment }}
             steps:
-              - template: ../steps/get-kubernetes-credentials.yaml
+              - template: /applications/steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
                   aksCluster: ${{ variables.aksCluster }}
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/helm-acr-login.yaml
+              - template: /applications/steps/helm-acr-login.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   acrName: ${{ variables.acrName }}
               #- checkout: self
-              - template: ../steps/acr-chart-helm-upgrade.yaml
+              - template: /applications/steps/acr-chart-helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
@@ -146,5 +146,3 @@ stages:
                     keyVaultName: ${{ variables.keyVaultName }}
                   ${{ if variables.additionalFields }}:
                     additionalFields: ${{ variables.additionalFields }}
-        
-                        

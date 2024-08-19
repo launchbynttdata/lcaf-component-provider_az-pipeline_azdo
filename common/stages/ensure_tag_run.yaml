@@ -1,9 +1,15 @@
-# This template will validate the branch name meets our requirements for automated versioning.
-# The branch name is determined from the Build.SourceBranch variable provided by Azure DevOps,
-# no other variables need to be present in scope for this step.
+# This template will ensure that a CD pipeline run is conducted against a
+# tagged version only. This prevents end-users from explicitly running the
+# CD pipeline against a branch or commit hash, ensuring that we are only
+# deploying tagged artifacts into our cloud environments.
+
+# The current ref is determined from the Build.SourceBranch variable provided
+# by Azure DevOps, no other variables need to be present in scope for this
+# step.
 
 # parameters:
-#  - name: serviceConnection - the ADO service connection to use to login to the container registry
+#  - serviceConnection: the ADO service connection to use to login to
+#    the container registry
 
 parameters:
   - name: serviceConnection

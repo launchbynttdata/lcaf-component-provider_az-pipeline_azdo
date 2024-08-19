@@ -1,12 +1,18 @@
 # This template will build a docker image and push it to the container registry.
+# A tag will be associated with the image, and it will be derived from the tags
+# that point to the current HEAD of the checked-out repo. If multiple tags are
+# found pointing to the same HEAD, the process selects the most recent version
+# (using `sort -V`) and will prefer a semantic version tag over a build ID tag.
 
 # parameters:
-#  - name: poolName - The name of the agent pool to run the job on.
-#  - name: dockerfile - The path to the Dockerfile. Default is 'Dockerfile'
-#  - name: imageRepository - The FQDN of the image repository
-#  - name: distPath - the directory containing the build artifacts. Default is 'dist/'
-#  - name: serviceConnection - the ADO service connection to use to login to the container registroy
-#  - name: dockerImageName - the name of the docker image. Default is the name of the repository
+#  - poolName: The name of the agent pool to run the job on.
+#  - dockerfile: The path to the Dockerfile. Default is 'Dockerfile'
+#  - imageRepository: The FQDN of the image repository
+#  - distPath: the directory containing the build artifacts. Default is 'dist/'
+#  - serviceConnection: the ADO service connection to use to login to the
+#    container registry
+#  - dockerImageName: the name of the docker image. Default is the name of the
+#    repository
 
 parameters:
   - name: poolName

@@ -10,7 +10,7 @@ stages:
   - stage: Release
     displayName: Release - ${{ parameters.targetEnvironment }}
     jobs:
-      - template: ../jobs/deploy.yaml
+      - template: /iac/jobs/deploy.yaml
         parameters:
           vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
           serviceConnection: ${{ parameters.serviceConnection }}

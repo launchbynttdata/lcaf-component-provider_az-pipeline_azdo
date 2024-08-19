@@ -1,3 +1,7 @@
+# Step to validate the existence of a container image in ACR. Assumes that
+# you have logged into ACR in a prior step. This step is completely
+# parameter-driven and expects no pipeline variables.
+
 parameters:
   - name: dockerImageName
     type: string

@@ -13,7 +13,6 @@ parameters:
     default: false
 
 steps:
- 
   - ${{ if parameters.authCustomNugetFeed }}:
     - template: /applications/steps/nuget_auth_to_repo.yaml
       parameters:
@@ -27,7 +26,7 @@ steps:
         custom: 'format'
         arguments:  '--verify-no-changes --verbosity diagnostic'
       env:
-        NOOP: noop 
+        NOOP: noop
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

@@ -1,22 +1,33 @@
-# This template will validate the branch name meets our requirements for automated versioning.
-# The following variables must be present in the current scope for this job to run:
-#  agentPool: The name of the ADO Agent pool to run the job on.
-#  serviceConnection: The name of the Service Connection to utilize
-#  buildSourceBranch: The branch of the triggering repo the build was queued for.
-#  pullRequestTargetBranch: The name of the target branch for a pull request.
-#  buildId: The ID associated with the current build
+# This template will increment the version tag associated with this repository.
+# In order for this stage template to execute, the following conditions must be
+# met:
+#   - The pipeline is being run against the `refs/heads/main` branch of the
+#     repository, and,
+#   - The build run must not have been manually triggered by an end user
+
+# First, this template will evaluate whether or not tags in this repository
+# match the pattern expected for Semantic Versions. Based on the tags within
+# the repository, one of two outcomes is possible:
+#
+#   - If a semantic tag exists, a new semantic version tag will be created
+#     according to the branch name of the previously-merged pull request.
+#     See the template at /common/steps/create_semver_tag.yaml for more detail.
+#   - If no semantic tag exists, a new tag with the current Build ID will be
+#     created and pushed to the repo.
+#
+# The following variables must be present in the current scope for this job to
+# run:
+# - agentPool: The name of the ADO Agent pool to run the job on.
+# - serviceConnection: The name of the Service Connection to utilize
+# - buildSourceBranch: The branch of the triggering repo the build was queued for.
+# - pullRequestTargetBranch: The name of the target branch for a pull request.
+# - buildId: The ID associated with the current build
 
 parameters:
-  # An override to force this stage to run against pull requests that 
-  # target a branch other than 'main'
-  - name: forceBranchNameValidationForNonMainPullRequests
-    type: boolean
-    default: false
-  # An override to require repositories to use branch name validation 
-  # even if a semantic version tag is not found
-  - name: forceBranchNameValidation
-    type: boolean
-    default: false
+  - name: serviceConnection
+    type: string
+  - name: poolName
+    type: string
 
 stages:
   - stage: AutomatedVersionUpdate
@@ -27,14 +38,18 @@ stages:
         parameters:
           jobName: AutomatedVersionUpdate
           jobDisplayName: Automated Version Update
-          poolName: $(agentPool)
+          poolName: ${{ parameters.poolName }}
           variables:
             - name: buildSourceBranch
               value: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
           steps:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
-                serviceConnection: $(serviceConnection)
+                serviceConnection: ${{ parameters.serviceConnection }}
                 outputVariableName: HasSemverTag
             - template: /common/steps/create_semver_tag.yaml
+              parameters:
+                serviceConnection: ${{ parameters.serviceConnection }}
             - template: /common/steps/create_buildid_tag.yaml
+              parameters:
+                serviceConnection: ${{ parameters.serviceConnection }}

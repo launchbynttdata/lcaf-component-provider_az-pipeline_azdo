@@ -1,10 +1,21 @@
-# This template will validate the branch name meets our requirements for automated versioning.
-# The following variables must be present in the current scope for this job to run:
-#  agentPool: The name of the ADO Agent pool to run the job on.
-#  serviceConnection: The name of the Service Connection to utilize
-#  buildSourceBranch: The branch of the triggering repo the build was queued for.
-#  pullRequestSourceBranch: The name of the source branch for a pull request.
-#  pullRequestTargetBranch: The name of the target branch for a pull request.
+# This stage template will validate the branch name meets our requirements for
+# automated versioning if semantic versioning is being used in this repo.
+# This stage requires no variables to be explicitly set, but needs the
+# following parameters:
+# - serviceConnection: The name of the Service Connection to utilize
+# - poolName: The name of the ADO Agent pool to run the job on.
+# - buildSourceBranch: The branch of the triggering repo the build was queued for.
+# - pullRequestSourceBranch: The branch that is being reviewed in a pull request.
+
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: poolName
+    type: string
+  - name: buildSourceBranch
+    type: string
+  - name: pullRequestSourceBranch
+    type: string
 
 stages:
   - stage: BranchNameValidation
@@ -15,11 +26,14 @@ stages:
         parameters:
           jobName: PlatformValidation
           jobDisplayName: Platform Validation
-          poolName: $(agentPool)
+          poolName: ${{ parameters.poolName }}
           steps:
             - template: /common/steps/has_semver_tag.yaml
               parameters:
-                serviceConnection: $(serviceConnection)
+                serviceConnection: ${{ parameters.serviceConnection }}
                 outputVariableName: HasSemverTag
             - template: /common/steps/launch_validate_branch_name.yaml
-
+              parameters:
+                serviceConnection: ${{ parameters.serviceConnection }}
+                buildSourceBranch: ${{ parameters.buildSourceBranch }}
+                pullRequestSourceBranch: ${{ parameters.pullRequestSourceBranch }}

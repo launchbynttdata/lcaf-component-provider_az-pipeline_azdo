@@ -20,9 +20,9 @@ steps:
           IFS='.' read -r major minor patch <<< "$version"
           printf '%d%03d%03d' "$major" "$minor" "$patch"
         }
-        
+
         echo -e "target branch: $(System.PullRequest.targetBranchName)"
-        
+
         # Chart file can be .yml or .yaml
         chartFile=$(ls | grep -E 'Chart\.ya?ml')
         if [ -z "${chartFile}" ]; then
@@ -37,7 +37,7 @@ steps:
           echo "Error: Unable to retrieve helm chart version from target branch"
           exit 1
         fi
-        
+
         # Get the version from the PR branch
         pr_version=$(grep '^version:' ${chartFile} | awk '{print $2}')
         echo "PR branch version: $pr_version"
@@ -45,14 +45,14 @@ steps:
           echo "Error: Unable to retrieve helm chart version from source branch"
           exit 1
         fi
-        
+
         # Convert versions to integers
         target_version_int=$(version_to_int "$target_version")
         pr_version_int=$(version_to_int "$pr_version")
-        
+
         echo "Target branch version as integer: $target_version_int"
         echo "PR branch version as integer: $pr_version_int"
-        
+
         # Compare versions
         if [ "${pr_version_int}" -le "${target_version_int}" ]; then
           echo "Error: The version in ${chartFile} has not been incremented."

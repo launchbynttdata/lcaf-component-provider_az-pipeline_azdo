@@ -1,5 +1,5 @@
 
-# This step will publish a Helm chart to an Azure Container Registry (ACR). 
+# This step will publish a Helm chart to an Azure Container Registry (ACR).
 # This step assumes that its already logged in tot he ACR.
 
 parameters:

@@ -10,9 +10,9 @@ jobs:
     pool:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
-      - template: ../steps/launch_make_check.yaml
+      - template: /common/steps/launch_make_check.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
-      - template: ../steps/launch_version_predict.yaml
+      - template: /common/steps/launch_version_predict.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}

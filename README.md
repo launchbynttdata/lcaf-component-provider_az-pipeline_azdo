@@ -31,7 +31,7 @@ stages:
 For referring to other templates inside a template, you can use relative path. For example consider the stage template [terragrunt.yaml](iac/stages/terragrunt.yaml) which refers to the step template [terragrunt-plan.yaml](iac/steps/terragrunt-plan.yaml). The relative path to refer to the step template from the stage template is as below
 
 ```yaml
-- template: ../steps/terragrunt-plan.yaml
+- template: /applications/steps/terragrunt-plan.yaml
   parameters:
       serviceConnection: ${{ deployEnv.serviceConnection }}
       environment: ${{ deployEnv.environment }}
@@ -43,11 +43,11 @@ For referring to other templates inside a template, you can use relative path. F
 ## Variables
 Variables can be defined at different levels in Azure DevOps pipelines - root, stage or job level.
 
-Different syntax to define variables 
+Different syntax to define variables
 - macro syntax `$(var)`: gets processed during `runtime` before a task runs. Runtime happens after template expansion.
   - if `$(var)` can't be replaced, `$(var)` won't be replaced by anything.
   - macro syntax can only be used for steps, jobs and stages. Cant be used for resources or triggers.
-  - Macro variables are only expanded when they're used for a value, not as a keyword. Values appear on the right side of a pipeline definition. The following is valid: `key: $(value)`. The following isn't valid: `$(key): value`. 
+  - Macro variables are only expanded when they're used for a value, not as a keyword. Values appear on the right side of a pipeline definition. The following is valid: `key: $(value)`. The following isn't valid: `$(key): value`.
 - runtime expression `$[variables.var]` : gets processed during runtime
   - Intended to run with conditions or expressions
   - Runtime expression variables silently coalesce to empty strings when a replacement value isn't found.
@@ -105,7 +105,7 @@ One can access the secrets stored in the Azure KeyVault directly in the pipeline
     # Accepts comma seperated list of secret names
     SecretsFilter: 'secretDemo'                          ## YOUR_SECRET_NAME. Default value: *
     # Runs the task before the job execution begins. Exposes secrets to all tasks in the job, not just tasks that follow this one.
-    RunAsPreJob: false  
+    RunAsPreJob: false
 ```
 
 Use the secrets in the subsequent steps as below
@@ -119,7 +119,7 @@ Use the secrets in the subsequent steps as below
     mySecret: $(secretDemo)
 
 - bash: |
-    echo "Secret Found! $MY_MAPPED_ENV_VAR"        
+    echo "Secret Found! $MY_MAPPED_ENV_VAR"
   env:
     MY_MAPPED_ENV_VAR: $(mySecret)
 ```

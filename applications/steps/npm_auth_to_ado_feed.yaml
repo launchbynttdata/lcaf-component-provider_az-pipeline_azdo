@@ -5,7 +5,7 @@
 #   - name: certPath  (optional) The path to the certificate file. Default is false, which means no certificate is used.
 
 
-parameters: 
+parameters:
   - name: certPath
     type: string
     default: 'false'

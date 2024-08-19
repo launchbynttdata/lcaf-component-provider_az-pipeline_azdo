@@ -40,7 +40,7 @@ stages:
         displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Pre Deploy'
         dependsOn: ${{ deployEnv.dependsOn }}
         jobs:
-          - template: ../../common/jobs/generic-job.yaml
+          - template: /common/jobs/generic-job.yaml
             parameters:
               jobName: ${{ deployEnv.environment }}_TerraformInitPlan
               jobDisplayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terraform Init and Plan'
@@ -48,12 +48,12 @@ stages:
               workspace:
                 clean: all
               steps:
-                - template: ../../common/steps/verify-ado-agent.yaml
-                - template: ../../common/steps/asdf-install.yaml
+                - template: /common/steps/verify-ado-agent.yaml
+                - template: /common/steps/asdf-install.yaml
                   parameters:
                     pluginName: 'terragrunt'
                     pluginVersion: '0.54.11'
-                - template: ../steps/terragrunt-plan.yaml
+                - template: /iac/steps/terragrunt-plan.yaml
                   parameters:
                     serviceConnection: ${{ deployEnv.serviceConnection }}
                     environment: ${{ deployEnv.environment }}
@@ -63,7 +63,7 @@ stages:
         displayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Deploy'
         dependsOn: ${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_pre_deploy
         jobs:
-          - template: ../../common/jobs/deploy-job.yaml
+          - template: /common/jobs/deploy-job.yaml
             parameters:
               jobName: '${{ deployEnv.environment }}_${{ deployEnv.region }}_${{ deployEnv.environmentNumber }}_deploy'
               jobDisplayName: '${{ deployEnv.environment }} ${{ deployEnv.region }} ${{ deployEnv.environmentNumber }} - Terragrunt Apply'
@@ -72,11 +72,11 @@ stages:
                 clean: all
               azureEnvironment: ${{ deployEnv.azureEnvironment }}
               steps:
-                - template: ../../common/steps/asdf-install.yaml
+                - template: /common/steps/asdf-install.yaml
                   parameters:
                       pluginName: 'terragrunt'
                       pluginVersion: '0.54.11'
-                - template: ../steps/terragrunt-apply.yaml
+                - template: /iac/steps/terragrunt-apply.yaml
                   parameters:
                     serviceConnection: ${{ deployEnv.serviceConnection }}
                     environment: ${{ deployEnv.environment }}

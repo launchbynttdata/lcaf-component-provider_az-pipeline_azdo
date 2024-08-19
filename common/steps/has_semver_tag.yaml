@@ -1,3 +1,19 @@
+# Step to determine whether a given repository has any tags that conform to
+# Semantic Versioning. This step operates only on parameters and does not
+# require any variables to be in scope.
+
+# Tag determination logic:
+# $(git tag | grep -P "^\d+\.\d+\.\d+$" | sort -rV | head -n 1)
+#     ^                       ^                 ^       ^
+#     |                       |                 |       |
+#   Retrieve      Filter to tags matching   Version   Retrieve only
+#   all tags      a pattern like #.#.#      sorted    the latest
+#
+# If anything is returned from the above, the repository has at least one tag
+# that matches the semantic versioning pattern and the outputVariableName var
+# is set to true. If there are no tags matching the above, false is stored in
+# outputVariableName.
+
 parameters:
   - name: serviceConnection
     type: string
@@ -11,11 +27,10 @@ steps:
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
-      workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
         export PATH=/home/launch/env/bin:$PATH
         LATEST_SEMVER_TAG=$(git tag | grep -P "^\d+\.\d+\.\d+$" | sort -rV | head -n 1)
-        [ -n "$LATEST_SEMVER_TAG" ] && (echo "Using semantic versions."; echo "##vso[task.setvariable variable=$OUTPUT_VARIABLE_NAME]true") ||  (echo "Using BuildID"; echo "##vso[task.setvariable variable=$OUTPUT_VARIABLE_NAME]false")
+        [ -n "$LATEST_SEMVER_TAG" ] && (echo "Using semantic versions."; echo "##vso[task.setvariable variable=$OUTPUT_VARIABLE_NAME]true") || (echo "Using BuildID"; echo "##vso[task.setvariable variable=$OUTPUT_VARIABLE_NAME]false")
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
     env:

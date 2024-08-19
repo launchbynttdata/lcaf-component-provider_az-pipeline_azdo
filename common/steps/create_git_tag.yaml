@@ -4,9 +4,9 @@ parameters:
 
 steps:
 - task: Bash@3
-  displayName: Set git tag 
+  displayName: Set git tag
   inputs:
-    targetType: inline 
+    targetType: inline
     script: |
       echo "Setting tag ${{ parameters.tag }}"
       git tag ${{ parameters.tag }}

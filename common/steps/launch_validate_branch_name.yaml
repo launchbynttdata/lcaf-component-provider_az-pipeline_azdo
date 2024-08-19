@@ -1,10 +1,16 @@
-# This step template will validate the branch name meets our requirements for automated versioning.
-# The following variables must be present in the current scope for this job to run:
-#  serviceConnection: The name of the Service Connection to utilize
-#  buildSourceBranch: The branch of the triggering repo the build was queued for.
-#  pullRequestSourceBranch: The name of the source branch for a pull request.
-#  pullRequestTargetBranch: The name of the target branch for a pull request.
-#  HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
+# This step template will validate the branch name meets our requirements for
+# automated versioning. The following variables must be present in the current
+# scope for this job to run:
+# - HasSemverTag: A boolean indicating whether this repo has existing semver
+#   tags. This variable is used to determine whether or not this step will run.
+
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: buildSourceBranch
+    type: string
+  - name: pullRequestSourceBranch
+    type: string
 
 steps:
   - task: AzureClI@2
@@ -23,8 +29,8 @@ steps:
         echo "SOURCE_BRANCH: ${SOURCE_BRANCH}"
         # If we get a non-main branch, we need to validate the name using launch-cli.
         [ $SOURCE_BRANCH == 'main' ] || launch validate branch-name --branch-name "${SOURCE_BRANCH}" || (echo "##vso[task.logissue type=error]Source Branch name is invalid."; exit 1)
-      azureSubscription: $(serviceConnection)
+      azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
     env:
-      BUILD_SOURCE_BRANCH: $(buildSourceBranch)
-      PULL_REQUEST_SOURCE_BRANCH: $(pullRequestSourceBranch)
+      BUILD_SOURCE_BRANCH: ${{ parameters.buildSourceBranch }}
+      PULL_REQUEST_SOURCE_BRANCH: ${{ parameters.pullRequestSourceBranch }}

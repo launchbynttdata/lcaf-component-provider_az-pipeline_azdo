@@ -1,11 +1,17 @@
-# This multi stage template is designed to deploy an application as helm release in the AKS cluster. It is currently used to deploy
-# only dotnetcore applications but can be used for any applications. 
-# It is designed in an opinionated fashion to pull the helm chart from the ACR registry, set the image tag generated at runtime in a previous stage.
-# It accepts several values file from a certain path in the application repository. At this time, it cannot accept arbitrary values in form of --set commands.
+# This multi-stage template is designed to deploy an application with a helm
+# release in the AKS cluster. It is currently used to deploy only dotnetcore
+# applications but can be used for any application that utilizes a Helm chart.
 
-# This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
-# Expect the following variables to be available in the variable file
-# variables: 
+# This stage template will validate the existence of the desired container
+# image prior to deploying.
+
+# It accepts several values file from a certain path in the application
+# repository. At this time, it cannot accept arbitrary values in form of
+# --set commands.
+
+# This pipeline template assumes that a variableFile must be passed as
+# parameter to the template in the `deployEnv` object. The following
+# variables must be available to the pipeline from the variable file:
 #   - name: serviceConnection
 #     value: 'ado-sp'
 #   - name: agentPool
@@ -48,7 +54,7 @@ stages:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
-        - template: ../../common/jobs/generic-job.yaml
+        - template: /common/jobs/generic-job.yaml
           parameters:
             jobName: ${{ deployEnv.environment }}_PreDeployJob
             jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
@@ -57,18 +63,18 @@ stages:
             workspace:
               clean: all
             steps:
-              - template: ../steps/get-kubernetes-credentials.yaml
+              - template: /applications/steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: $(aksResourceGroup)
                   aksCluster: $(aksCluster)
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/helm-acr-login.yaml
+              - template: /applications/steps/helm-acr-login.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   acrName: ${{ deployEnv.acrName }}
-              - template: ../steps/helm-diff.yaml
+              - template: /applications/steps/helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: $(namespace)
@@ -86,7 +92,7 @@ stages:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
-        - template: ../../common/jobs/deploy-job.yaml
+        - template: /common/jobs/deploy-job.yaml
           parameters:
             jobName: ${{ deployEnv.environment }}_DeployJob
             jobDisplayName: '${{ deployEnv.environment }} - Deploy'
@@ -96,15 +102,15 @@ stages:
               clean: all
             azureEnvironment: ${{ variables.azureEnvironment }}
             steps:
-              - template: ../../common/steps/verify-ado-agent.yaml
-              - template: ../steps/get-kubernetes-credentials.yaml
+              - template: /common/steps/verify-ado-agent.yaml
+              - template: /applications/steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: $(aksResourceGroup)
                   aksCluster: $(aksCluster)
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/helm-acr-login.yaml
+              - template: /applications/steps/helm-acr-login.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   acrName: ${{ deployEnv.acrName }}
@@ -114,7 +120,7 @@ stages:
                   acrRegistry: ${{ deployEnv.acrName }}
                   dockerImageName: ${{ deployEnv.imageName }}
                   dockerImageTag: ${{ deployEnv.imageTag }}
-              - template: ../steps/helm-upgrade.yaml
+              - template: /applications/steps/helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: $(namespace)
@@ -127,5 +133,3 @@ stages:
                   helmChartVersion: $(helmChartVersion)
                   ${{ if variables.helmTimeoutDuration }}:
                     helmTimeoutDuration: ${{ variables.helmTimeoutDuration }}
-        
-                        

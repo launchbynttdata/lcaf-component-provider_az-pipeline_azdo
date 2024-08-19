@@ -36,7 +36,7 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        # Takes whatever was supplied in the parameter, turns newlines into commas, 
+        # Takes whatever was supplied in the parameter, turns newlines into commas,
         # and drops leading and trailing commas that may arise from blank newlines
         COMMA_SEPARATED_TAGS=$(echo "${{ parameters.dockerImageTag }}" | paste -s -d, - | sed -E 's/^,*(.*[^,]),*$/\1/gi')
         echo "COMMA_SEPARATED_TAGS=$COMMA_SEPARATED_TAGS"

@@ -1,12 +1,57 @@
-# This template will create a semantic version tag utilizing the source branch name obtained from the last-merged PR.
-# The following variables must be present in the current scope for this job to run:
-#  serviceConnection: The name of the Service Connection to utilize
-#  HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
+# This template will create a semantic version tag utilizing the source branch
+# name obtained from the last-merged PR. This step utilizes the repository's
+# history to determine the last-merged PR's identifier, then queries the Azure
+# DevOps REST API to work out the branch name that was utilized in that pull
+# request.
+
+# Determining the last PR identifier:
+#
+# $(git log -n 1 --pretty=format:%B | sed -ne 's/.*PR \([0-9]*\).*/\1/p' | head -n 1)
+#             ^                  ^                        ^                   ^
+#             |                  |                        |                   |
+#             |         Outputs only the            Extracts only the       Grabs only the
+#             |         commit message              numeric part of         first PR ID
+#             |                                     the PR's identifier
+#           Limits to the last commit
+
+# Querying the Azure DevOps API:
+#
+# $(curl -H "$AUTHORIZATION_HEADER" -s ${{ parameters.adoUrl }}/_apis/git/pullrequests/$ORIGINATING_PULL_REQUEST_ID\?api-version\=7.0 | jq -r .sourceRefName | sed -e 's,refs/heads/,,g')
+#                ^                                ^                                             ^                                                 ^                         ^
+#                |                                |                                             |                                                 |                         |
+#           Utilizes AzDO Token           Defaulted, but can                              PR Identifier from                            Extract the branch name         Strip 'refs/heads/'
+#           from checkout phase           change if needed                                commit history                                that was used as the source     from the branch name
+#                                                                                                                                       of the pull request
+
+# The retrieved branch name is plugged into the `launch-cli` command which will
+# determine the next version based on the branch name provided, and then push a
+# tag to the repository. `launch-cli` supports incrementing a semantic version
+# using the following prefixes:
+#
+# Increments the PATCH version:
+# - fix/*
+# - patch/*
+# - bug/*
+#
+# Increments the MINOR version:
+# - feature/*
+#
+# Increments the MAJOR version:
+# - fix!/*
+# - patch!/*
+# - bug!/*
+# - feature!/*
+
+# The following variable must be present in the current scope for this job:
+# - HasSemverTag: A boolean indicating whether this repo has existing semver
+#   tags. This variable determines whether or not the step runs.
 
 parameters:
   - name: adoUrl
     type: string
     default: https://fdc-devops.dc.state.fl.us/DefaultCollection/TRP
+  - name: serviceConnection
+    type: string
 
 steps:
   - task: AzureClI@2
@@ -15,7 +60,6 @@ steps:
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
-      workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
         export PATH=/home/launch/env/bin:$PATH
         # The pull request associated with this run is obtained from the
@@ -30,7 +74,7 @@ steps:
         SOURCE_BRANCH_NAME=$(curl -H "$AUTHORIZATION_HEADER" -s ${{ parameters.adoUrl }}/_apis/git/pullrequests/$ORIGINATING_PULL_REQUEST_ID\?api-version\=7.0 | jq -r .sourceRefName | sed -e 's,refs/heads/,,g')
         echo "SOURCE_BRANCH_NAME: ${SOURCE_BRANCH_NAME}"
         launch github version apply --pipeline --source-branch $SOURCE_BRANCH_NAME
-      azureSubscription: $(serviceConnection)
+      azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)

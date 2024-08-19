@@ -46,18 +46,18 @@ steps:
       env:
         SSL_CERT_FILE: ${{ parameters.certPath }}
         NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
-  
+
   - task: Bash@3
     displayName: 'Run npm audit'
     inputs:
       targetType: inline
-      script: | 
+      script: |
         npm audit --json 2>&1 | tee ${{ parameters.auditResultsPath }}
     ${{ if ne(parameters.certPath, 'false') }}:
       env:
         SSL_CERT_FILE: ${{ parameters.certPath }}
         NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
-  
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish npm audit results'
     enabled: true

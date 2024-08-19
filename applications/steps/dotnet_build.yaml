@@ -28,12 +28,11 @@ parameters:
     default: '$(Build.Repository.Name)-audit.log'
 
 steps:
- 
   - ${{ if parameters.authCustomNugetFeed }}:
     - template: /applications/steps/nuget_auth_to_repo.yaml
       parameters:
         certPath: ${{ parameters.certPath }}
-  
+
     # - task: DotNetCoreCLI@2
     #   displayName: 'Run dotnet restore'
     #   enabled: true
@@ -41,11 +40,11 @@ steps:
     #     command: restore
     #     projects: ${{ parameters.solutionPath }}
     #   env:
-    #     NOOP: noop 
+    #     NOOP: noop
     #     ${{ if ne(parameters.certPath, 'false') }}:
     #       SSL_CERT_FILE: ${{ parameters.certPath }}
     #       NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
-    
+
     - task: Bash@3
       displayName: 'Run NuGet package audit'
       enabled: true
@@ -54,7 +53,7 @@ steps:
         script: |
           dotnet list package --vulnerable --include-transitive 2>&1 | tee ${{ parameters.auditResultsPath }}
       env:
-        NOOP: noop 
+        NOOP: noop
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
@@ -67,7 +66,7 @@ steps:
         ArtifactName: 'NugetPackageAudit'
         publishLocation: 'Container'
       env:
-        NOOP: noop 
+        NOOP: noop
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
@@ -80,7 +79,7 @@ steps:
         projects: ${{ parameters.solutionPath }}
         arguments: '--configuration ${{ parameters.buildConfiguration }}'
       env:
-        NOOP: noop 
+        NOOP: noop
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}

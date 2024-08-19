@@ -10,7 +10,7 @@ stages:
   - stage: PullRequestMerged
     displayName: Pull Request Merged
     jobs:
-      - template: ../jobs/pr_merge.yaml
+      - template: /common/jobs/pr_merge.yaml
         parameters:
           vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
           serviceConnection: ${{ parameters.serviceConnection }}

@@ -17,12 +17,10 @@ parameters:
 
 
 steps:
- 
   - ${{ if parameters.authCustomNugetFeed }}:
     - template: /applications/steps/nuget_auth_to_repo.yaml
       parameters:
         certPath: ${{ parameters.certPath }}
-      
     - task: DotNetCoreCLI@2
       displayName: 'Run tests'
       enabled: true
@@ -32,11 +30,10 @@ steps:
         publishTestResults: true
         arguments: '--configuration $(buildConfiguration) --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura'
       env:
-        NOOP: noop 
+        NOOP: noop
         ${{ if ne(parameters.certPath, 'false') }}:
           SSL_CERT_FILE: ${{ parameters.certPath }}
           NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
-    
     - task: PublishCodeCoverageResults@1
       displayName: 'Publish code coverage results'
       inputs:

@@ -1,12 +1,16 @@
-# This template will create a tag matching the current Build ID.
-# The following variables must be present in the current scope for this job to run:
-#  serviceConnection: The name of the Service Connection to utilize
-#  HasSemverTag: A boolean containing 'true' or 'false' indicating whether this repo has existing semver tags
+# This template will create a tag matching the current Build ID using the
+# $BUILD_BUILDNUMBER environment variable that is present by default.
+
+# The following variable must be present in the current scope for this job:
+# - HasSemverTag: A boolean indicating whether this repo has existing semver
+#   tags. This variable determines whether or not the step runs.
 
 parameters:
   - name: adoUrl
     type: string
     default: https://fdc-devops.dc.state.fl.us/DefaultCollection/TRP
+  - name: serviceConnection
+    type: string
 
 steps:
   - task: AzureClI@2
@@ -15,12 +19,11 @@ steps:
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
-      workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
         echo "Creating tag $BUILD_BUILDID for Build $BUILD_BUILDNUMBER"
         git tag $BUILD_BUILDID
         git push origin $BUILD_BUILDID
-      azureSubscription: $(serviceConnection)
+      azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)

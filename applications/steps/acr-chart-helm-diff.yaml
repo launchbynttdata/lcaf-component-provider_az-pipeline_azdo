@@ -104,5 +104,5 @@ steps:
         done
 
         echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
-        
+
         eval "${command}"

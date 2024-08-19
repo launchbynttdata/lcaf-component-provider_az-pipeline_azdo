@@ -1,4 +1,4 @@
-parameters: 
+parameters:
   - name: jobName
     type: string
     default: false

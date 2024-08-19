@@ -1,4 +1,4 @@
-# Retrieves the tag associated with the HEAD of the current branch 
+# Retrieves the tag associated with the HEAD of the current branch
 
 parameters:
   - name: serviceConnection

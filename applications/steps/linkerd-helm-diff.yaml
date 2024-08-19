@@ -1,4 +1,4 @@
-# This template will display the helm diff for the helm deployment of linkerd service mesh. It will fetch the trust anchor and issuer certificates from the key-vault (stored as secrets). 
+# This template will display the helm diff for the helm deployment of linkerd service mesh. It will fetch the trust anchor and issuer certificates from the key-vault (stored as secrets).
 # The output may be empty when no differences are found
 # Any variables refererred in this file and not defined here must be either defined in the job, stage, pipeline or variable template files in the app repo.
 # For example keyVaultName, trust_anchor_cert are defined in the variables template file in app repo and included in the stage template applications/stages/linkerd-helm-deploy.yaml

@@ -2,7 +2,7 @@
 
 # This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
 # Expect the following variables to be available in the variable file
-# variables: 
+# variables:
 #   - name: serviceConnection
 #     value: 'trp_dev'
 #   - name: agentPool
@@ -57,7 +57,7 @@ stages:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
-        - template: ../../common/jobs/generic-job.yaml
+        - template: /common/jobs/generic-job.yaml
           parameters:
             jobName: ${{ deployEnv.environment }}_PreDeployJob
             jobDisplayName: '${{ deployEnv.environment }} - Pre deploy'
@@ -66,14 +66,14 @@ stages:
             workspace:
               clean: all
             steps:
-              - template: ../steps/get-kubernetes-credentials.yaml
+              - template: /applications/steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
                   aksCluster: ${{ variables.aksCluster }}
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
-              - template: ../steps/oauth2-proxy-helm-diff.yaml
+              - template: /applications/steps/oauth2-proxy-helm-diff.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
@@ -90,7 +90,7 @@ stages:
         variables:
           - template: ${{ deployEnv.variableFile }}
       jobs:
-        - template: ../../common/jobs/deploy-job.yaml
+        - template: /common/jobs/deploy-job.yaml
           parameters:
             jobName: ${{ deployEnv.environment }}_DeployJob
             jobDisplayName: '${{ deployEnv.environment }} - Deploy'
@@ -100,8 +100,8 @@ stages:
               clean: all
             azureEnvironment: ${{ variables.azureEnvironment }}
             steps:
-              - template: ../../common/steps/verify-ado-agent.yaml
-              - template: ../steps/get-kubernetes-credentials.yaml
+              - template: /common/steps/verify-ado-agent.yaml
+              - template: /applications/steps/get-kubernetes-credentials.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   aksResourceGroup: ${{ variables.aksResourceGroup }}
@@ -109,7 +109,7 @@ stages:
                   ${{ if deployEnv.aksAdEnabled }}:
                     aksAdEnabled: ${{ deployEnv.aksAdEnabled }}
               #- checkout: self
-              - template: ../steps/oauth2-proxy-helm-upgrade.yaml
+              - template: /applications/steps/oauth2-proxy-helm-upgrade.yaml
                 parameters:
                   serviceConnection: ${{ variables.serviceConnection }}
                   namespace: ${{ variables.namespace }}
@@ -119,5 +119,3 @@ stages:
                   helmChartVersion: ${{ variables.helmChartVersion }}
                   helmChartRepoUrl: ${{ variables.helmChartRepoUrl }}
                   overrideValuesFile: ${{ deployEnv.overrideValuesFile }}
-        
-                        
