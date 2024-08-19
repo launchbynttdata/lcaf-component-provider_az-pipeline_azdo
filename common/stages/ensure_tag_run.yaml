@@ -36,7 +36,7 @@ stages:
                   export PATH=/home/launch/env/bin:$PATH
                   TAGGED=$(echo $SOURCE_BRANCH | grep -P "^refs/tags/")
                   [[ -n $TAGGED ]] || (echo "##vso[task.logissue type=error]CD pipeline can only be run against a tag, not a branch or commit." ; exit 1)
-                azureSubscription: ${{ parameters.serviceConnection }
+                azureSubscription: ${{ parameters.serviceConnection }}
                 addSpnToEnvironment: true
               env:
                 SOURCE_BRANCH: $(Build.SourceBranch)
