@@ -1,4 +1,4 @@
-# This template will deploy a public helm chart on AKS cluster. The helm chart name and repo url must be passed in as parameters
+# This template will perform a diff on a helm chart pulled from an ACR registry (OCI complaint). The acrName and the helmChartName must be passed in as parameters
 
 parameters:
   - name: enabled
@@ -13,26 +13,18 @@ parameters:
   - name: releaseName
     type: string
     default: false
+  - name: acrName
+    type: string
+    default: false
   - name: deployEnv
     type: string
     default: false
-  - name: helmChartRepoUrl
-    type: string
-    default: false
-  # Repo name to use when performing `helm repo add` command
-  - name: helmRepoName
-    type: string
-    default: false
-  # Chart name inside the chart repository
   - name: helmChartName
     type: string
     default: false
   - name: helmChartVersion
     type: string
     default: false
-  - name: helmTimeoutDuration
-    type: string
-    default: 5m0s
   - name: additionalSteps
     type: stepList
     default: []
@@ -44,15 +36,7 @@ parameters:
   - name: overrideValuesFile
     type: string
     default: false
-  # Adds the --force to helm upgrade
-  - name: helmForceUpgrade
-    type: string
-    default: true
-  # Adds the --wait to helm upgrade
-  - name: helmWaitForCompletion
-    type: string
-    default: true
-    # Secrets will be defined in variables.yaml in the form of `otel.connectionString:connection-string,otel.password:password`
+  # Secrets will be defined in variables.yaml in the form of `otel.connectionString:connection-string,otel.password:password`
   - name: secretFields
     type: string
     default: ""
@@ -70,7 +54,7 @@ steps:
     - ${{ step }}
   - task: AzureCLI@2
     enabled: ${{ parameters.enabled }}
-    displayName: Helm Upgrade
+    displayName: Helm Diff
     env:
       KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
     inputs:
@@ -79,7 +63,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       scriptLocation: 'inlineScript'
       inlineScript: |
-        # set -x
+
         # Check if namespace exists
         if kubectl get namespace ${{ parameters.namespace }} >/dev/null 2>&1; then
           echo "Namespace $namespace already exists"
@@ -88,27 +72,17 @@ steps:
           kubectl create namespace ${{ parameters.namespace }}
         fi
 
-        echo -e "Adding helm repo: ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }} and updating...\n"
+        helmRepoUrl="oci://${{ parameters.acrName }}/helm/${{ parameters.helmChartName }}"
 
-        helm repo add ${{ parameters.helmRepoName }} ${{ parameters.helmChartRepoUrl }}
-        helm repo update
-
-        command="helm upgrade --install ${{ parameters.releaseName }} ${{ parameters.helmRepoName }}/${{ parameters.helmChartName }} \
-          -n ${{ parameters.namespace }} --version ${{ parameters.helmChartVersion }} --timeout ${{ parameters.helmTimeoutDuration }}"
-
-        if [[ ${{ parameters.helmWaitForCompletion }} =~ ^[Tt]rue$ ]]; then
-           command+=" --wait"
-        fi
-
-        if [[ ${{ parameters.helmForceUpgrade }} =~ ^[Tt]rue$ ]]; then
-           command+=" --force"
-        fi
+        command="helm diff upgrade --install ${{ parameters.releaseName }} ${helmRepoUrl} \
+          --version ${{ parameters.helmChartVersion }} -n ${{ parameters.namespace }} \
+          --allow-unreleased --suppress-secrets "
 
         if [[ -n "${{ parameters.overrideValuesFile }}" ]]; then
           command+=" -f ${{ parameters.overrideValuesFile }}"
         fi
 
-         if [[ -n "${{ parameters.additionalFields }}" ]]; then
+        if [[ -n "${{ parameters.additionalFields }}" ]]; then
           command+=" ${{ parameters.additionalFields }}"
         fi
 
@@ -120,13 +94,15 @@ steps:
         for pair in $secretsList; do
             # Split the pair into key and value using ':' as a delimiter
             helm_key=$(echo ${pair} | cut -d':' -f1)
+            # This will be used to suppress the secret value in the helm diff command
+            suppress_key=$(echo ${helm_key} | tr '.' '\n' | tail -n 1)
             secret_name=$(echo ${pair} | cut -d':' -f2)
-            secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name ${secret_name} --query value -o tsv)
+            secret_value=$(az keyvault secret show --vault-name ${{ parameters.keyVaultName }} --name $secret_name --query value -o tsv)
             [ $? -ne 0 ] && exit 1
-            echo "Secret: ${helm_key} found in ${{ parameters.keyVaultName }}"
-            command+=" --set ${helm_key}=\"${secret_value}\""
+            echo "Secret: $helm_key found in ${{ parameters.keyVaultName }}"
+            command+=" --set ${helm_key}=\"${secret_value}\" --suppress-output-line-regex ${suppress_key}"
         done
 
-        echo -e "Performing helm upgrade...\n"
-
+        echo -e "Performing helm diff operation for upgrade. You may not see anything printed when there is no difference between the previous and the current release...\n"
+        
         eval "${command}"

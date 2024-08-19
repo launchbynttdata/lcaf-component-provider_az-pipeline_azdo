@@ -1,0 +1,15 @@
+parameters:
+  - name: workingDirectory
+    type: string
+    default: $(Pipeline.Workspace)/s
+
+steps:
+  - task: Bash@3
+    displayName: 'Helm Lint'
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      targetType: 'inline'
+      script: |
+        type helm || exit 1
+        echo -e "Linting the helm chart"
+        helm lint

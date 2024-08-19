@@ -1,3 +1,8 @@
+# This multi stage template is designed to deploy an application as helm release in the AKS cluster. It is currently used to deploy
+# only dotnetcore applications but can be used for any applications. 
+# It is designed in an opinionated fashion to pull the helm chart from the ACR registry, set the image tag generated at runtime in a previous stage.
+# It accepts several values file from a certain path in the application repository. At this time, it cannot accept arbitrary values in form of --set commands.
+
 # This pipeline template assumes that a variableFile must be passed as parameter to the template in the `deployEnv` object
 # Expect the following variables to be available in the variable file
 # variables: 

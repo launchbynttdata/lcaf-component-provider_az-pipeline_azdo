@@ -1,0 +1,21 @@
+
+
+parameters:
+  - name: poolName
+    type: string
+
+
+stages:
+  - stage: validate_helm_chart
+    displayName: Validate Helm Chart
+    jobs:
+      - template: /common/jobs/generic-job.yaml
+        parameters:
+          jobName: validate_helm_chart
+          jobDisplayName: Validate Helm Chart
+          poolName: ${{ parameters.poolName }}
+          workspace:
+            clean: all
+          steps:
+            - template: /applications/steps/helm-lint.yaml
+            - template: /applications/steps/validate-helm-chart-version.yaml

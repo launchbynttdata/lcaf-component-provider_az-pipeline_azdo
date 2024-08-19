@@ -1,0 +1,68 @@
+
+# This step will publish a Helm chart to an Azure Container Registry (ACR). 
+# This step assumes that its already logged in tot he ACR.
+
+parameters:
+  - name: serviceConnection
+    type: string
+    default: false
+  - name: acrName
+    type: string
+    default: false
+  - name: workingDirectory
+    type: string
+    default: $(Pipeline.Workspace)/s
+
+steps:
+  - task: AzureCLI@2
+    enabled: true
+    displayName: Package and Publish Helm Chart to ACR
+    env:
+      KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      workingDirectory: ${{ parameters.workingDirectory }}
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        set -e
+
+        type helm || exit 1
+        type yq || exit 1
+
+        # Chart file can be .yml or .yaml
+        chartFile=$(ls | grep -E 'Chart\.ya?ml')
+        if [ -z "${chartFile}" ]; then
+          echo "Error: No chart file found in the repository"
+          exit 1
+        fi
+
+        version=$(cat ${chartFile} | yq -r ".version")
+        chartName=$(cat ${chartFile} | yq -r ".name")
+
+        # Create a git tag only when the pipeline is run through the pipeline trigger
+
+        if [ "$(Build.Reason)" == "Manual" ]; then
+          echo "Skipping to create Git Tag as the build is manual."
+        else
+          echo -e "Creating a git tag: ${version}"
+          git tag ${version}
+          echo -e "Pushing tag to remote"
+          git push origin ${version} || exit 1
+        fi
+
+        # for charts having dependencies
+        echo -e "Listing and running the helm dependency update"
+        helm dependency list
+        helm dependency update
+
+        echo -e "Packaging the helm chart with version: ${version}"
+        helm package .
+
+        command="helm push ${chartName}-${version}.tgz oci://${{ parameters.acrName }}/helm"
+
+        echo -e "The below command will be executed: \n\n${command}"
+
+        eval "${command}"
+
+
