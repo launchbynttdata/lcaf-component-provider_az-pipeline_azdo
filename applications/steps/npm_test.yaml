@@ -32,14 +32,17 @@ steps:
       ${{ if ne(parameters.certPath, 'false') }}:
         SSL_CERT_FILE: ${{ parameters.certPath }}
         NODE_EXTRA_CA_CERTS: ${{ parameters.certPath }}
-
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: ' ${{ parameters.coverageReportPath }}/junit.xml'
   - ${{ if eq( parameters.coverageReportType, 'cobertura') }}:
-    - task: PublishCodeCoverageResults@1
-      displayName: 'Publish code coverage results'
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Coverage Results'
       inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: ${{ parameters.coverageReportPath }}/coverage-summary.json
-        reportDirectory: ${{ parameters.coverageReportPath }}
+        summaryFileLocation: ${{ parameters.coverageReportPath }}/coverage.xml
       env:
         NOOP: noop
         ${{ if ne(parameters.certPath, 'false') }}:
