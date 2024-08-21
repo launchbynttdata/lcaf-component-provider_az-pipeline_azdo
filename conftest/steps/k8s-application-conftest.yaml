@@ -1,0 +1,102 @@
+# This step is designed to run conftest against an application helm chart which adheres to 
+# a very specific directory structure for its env specific dependencies like env vars, secrets, helm values etc.
+# It is not suitable to run against a generic helm chart
+
+# It expects the helm chart to pulled from an ACR, so must be authenticated in the job or stage its included in
+
+parameters:
+  - name: serviceConnection
+    type: string
+    default: false
+  - name: namespace
+    type: string
+    default: false
+  - name: releaseName
+    type: string
+    default: false
+  - name: acrName
+    type: string
+    default: false
+  - name: imageTag
+    type: string
+    default: "v1"
+  - name: env
+    type: string
+    default: false
+  - name: helmChartName
+    type: string
+    default: false
+  - name: helmChartVersion
+    type: string
+    default: false
+  - name: conftestNamespace
+    type: string
+    default: ""
+  - name: conftestOutputType
+    type: string
+    default: junit
+  # Useful for exceptions, --all-namespaces etc.
+  - name: conftestAdditionalParams
+    type: string
+    default: ""
+  # If there are multiple repos checked out, then this should change to say $(Pipeline.Workspace)/main. main being the name of the repo
+  - name: workingDirectory
+    type: string
+    default: $(Pipeline.Workspace)/main
+  - name: policyPath
+    type: string
+    default: $(Pipeline.Workspace)/conftest/policy/kubernetes
+  - name: noFail
+    type: boolean
+    default: false
+
+steps:
+  - task: AzureCLI@2
+    displayName: 'Conftest Test'
+    env:
+      KUBECONFIG: "$(Pipeline.Workspace)/kubeconfig"
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      workingDirectory: ${{ parameters.workingDirectory }}
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+
+        # Get the env vars and secrets
+        envFolder=envs/${{ parameters.env }}
+        envVarsFile=${envFolder}/application/env_vars.yaml
+        secretsValuesFile=${envFolder}/application/secrets.yaml
+        helmValuesFile=${envFolder}/helm/values.yaml
+
+        additionalOptions=""
+
+        if [[ -n "${{ parameters.conftestNamespace }}"  ]]; then
+          additionalOptions+=" -n ${{ parameters.conftestNamespace }}"
+        fi
+
+        if [[ ${{ parameters.noFail }} =~ ^[Tt]rue$ ]]; then
+          echo "--no-fail flag is set. Conftest will not fail the pipeline if there are policy violations."
+          additionalOptions+=" --no-fail"
+        fi
+        
+        if [[ -n "${{ parameters.conftestAdditionalParams }}"  ]]; then
+          additionalOptions+=" ${{ parameters.conftestAdditionalParams }}"
+        fi
+
+        command="helm template ${{ parameters.releaseName }} oci://${{ parameters.acrName }}/helm/${{ parameters.helmChartName }} \
+          --version ${{ parameters.helmChartVersion }} -n ${{ parameters.namespace }} --set image.tag=${{ parameters.imageTag }} \
+          -f ${helmValuesFile} -f ${envVarsFile} -f ${secretsValuesFile} | \
+          conftest test -p ${{ parameters.policyPath }} -o ${{ parameters.conftestOutputType }} ${additionalOptions} - "
+        
+        echo -e "The below command will be exectuted:\n\n ${command}"
+
+        eval "${command}" | tee conftest-results-${{ parameters.env }}.xml
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    displayName: 'Publish Conftest Results'
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'conftest-results-${{ parameters.env }}.xml' 
+      searchFolder: ${{ parameters.workingDirectory }}
+      testRunTitle: 'Conftest Results - ${{ parameters.env }}'
