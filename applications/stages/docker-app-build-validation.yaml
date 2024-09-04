@@ -1,6 +1,6 @@
 parameters:
   # docker stage to copy test results from (for multi-stage builds)
-  - name: testResultStage
+  - name: testResultsStage
     type: string
     default: none
 
@@ -39,14 +39,14 @@ stages:
         variables:
           testResultsFolder: '$(Build.ArtifactStagingDirectory)/test-results'
         steps:
-          - ${{ if ne(parameters.testResultStage, 'none') }}:
+          - ${{ if ne(parameters.testResultsStage, 'none') }}:
             - task: Docker@2
               displayName: Run Tests
               env:
                 DOCKER_BUILDKIT: 1
               inputs:
                 command: build
-                arguments: '--target ${{ parameters.testResultStage }} --output type=local,dest=$(testResultsFolder)'
+                arguments: '--target ${{ parameters.testResultsStage }} --output type=local,dest=$(testResultsFolder)'
                 DockerFile: '**/Dockerfile'
 
             - ${{ if ne(parameters.testResultsFormat, 'none') }}:
