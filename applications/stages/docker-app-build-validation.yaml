@@ -19,15 +19,15 @@ parameters:
     type: string
     default: cobertura-coverage.xml
 
-  # format of the coverage results file
-  - name: coverageResultsFormat
-    type: string
-    default: none
-
   # path to source files referenced in the coverage results
   - name: coveragePathToSources
     type: string
     default: $(Build.SourcesDirectory)
+
+  # flag to enable coverage results publishing
+  - name: publishCoverageResults
+    type: bool
+    default: false
   
 
 stages:
@@ -56,7 +56,7 @@ stages:
                   testResultsFiles: '$(testResultsFolder)/${{ parameters.testResultsFile }}'
                   testResultsFormat: ${{ parameters.testResultsFormat }}
 
-            - ${{ if ne(parameters.coverageResultsFormat, 'none') }}:
+            - ${{ if eq(parameters.publishCoverageResults, true) }}:
               - task: PublishCodeCoverageResults@2
                 displayName: Publish Code Coverage
                 inputs:
