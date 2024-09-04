@@ -1,0 +1,70 @@
+parameters:
+  # docker stage to copy test results from (for multi-stage builds)
+  - name: testResultsStage
+    type: string
+    default: none
+
+  # path to the test results file
+  - name: testResultsFile
+    type: string
+    default: junit.xml
+
+  # format of the test results file
+  - name: testResultsFormat
+    type: string
+    default: none
+
+  # path to the coverage results file
+  - name: coverageResultsFile
+    type: string
+    default: cobertura-coverage.xml
+
+  # path to source files referenced in the coverage results
+  - name: coveragePathToSources
+    type: string
+    default: $(Build.SourcesDirectory)
+
+  # flag to enable coverage results publishing
+  - name: publishCoverageResults
+    type: boolean
+    default: false
+  
+
+stages:
+  - stage: build_validation
+    displayName: Build Validation
+    jobs:
+      - job: build
+        displayName: Build
+        variables:
+          testResultsFolder: '$(Build.ArtifactStagingDirectory)/test-results'
+        steps:
+          - ${{ if ne(parameters.testResultsStage, 'none') }}:
+            - task: Docker@2
+              displayName: Run Tests
+              env:
+                DOCKER_BUILDKIT: 1
+              inputs:
+                command: build
+                arguments: '--target ${{ parameters.testResultsStage }} --output type=local,dest=$(testResultsFolder)'
+                DockerFile: '**/Dockerfile'
+
+            - ${{ if ne(parameters.testResultsFormat, 'none') }}:
+              - task: PublishTestResults@2
+                displayName: Publish Test Results
+                inputs:
+                  testResultsFiles: '$(testResultsFolder)/${{ parameters.testResultsFile }}'
+                  testResultsFormat: ${{ parameters.testResultsFormat }}
+
+            - ${{ if eq(parameters.publishCoverageResults, true) }}:
+              - task: PublishCodeCoverageResults@2
+                displayName: Publish Code Coverage
+                inputs:
+                  summaryFileLocation: '$(testResultsFolder)/${{ parameters.coverageResultsFile }}'
+                  pathToSources: ${{ parameters.coveragePathToSources }}
+        
+          - task: Docker@2
+            displayName: Build Image
+            inputs:
+              command: build
+              Dockerfile: '**/Dockerfile'
