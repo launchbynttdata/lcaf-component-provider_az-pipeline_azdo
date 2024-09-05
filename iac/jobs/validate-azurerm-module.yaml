@@ -38,7 +38,7 @@ jobs:
             curl https://storage.googleapis.com/git-repo-downloads/repo > "$REPO_BIN_PATH"
             chmod a+rx "$REPO_BIN_PATH"
 
-            repo version
+            "$REPO_BIN_PATH" version
 
       - task: Bash@3
         displayName: 'Install asdf version manager'
