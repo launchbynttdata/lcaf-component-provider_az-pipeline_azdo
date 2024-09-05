@@ -1,14 +1,14 @@
 parameters:
   - name: gitRepo
-    value: string
+    type: string
   - name: gitCommit
-    value: string
+    type: string
   - name: gitHubToken
-    value: string
+    type: string
   - name: statusData
-    value: string
+    type: string
   - name: condition
-    value: string
+    type: string
     default: succeeded()
 
 steps:
