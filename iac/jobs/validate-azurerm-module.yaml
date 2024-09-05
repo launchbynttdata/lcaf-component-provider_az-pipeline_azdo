@@ -1,0 +1,72 @@
+parameters:
+  - name: gitRepo
+    type: string
+  - name: gitBranch
+    type: string
+  - name: gitCommit
+    type: string
+  - name: pullRequestId
+    type: string
+  - name: armServiceConnection
+    type: string
+  - name: condition
+    type: boolean
+    default: true
+
+jobs:
+  - job: ValidateAzurermModule
+    displayName: Validate terraform module
+    condition: ${{ parameters.condition }}
+    variables:
+      ASDF_INSTALL_DIR: '$HOME/.asdf'
+      ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
+    steps:
+      - checkout: none
+
+      - task: Bash@3
+        displayName: 'Install repo tool'
+        inputs:
+          targetType: 'inline'
+          script: |
+            HOME_BIN="$HOME/.bin"
+            REPO_BIN_PATH="$HOME_BIN/repo"
+
+            mkdir -p "$HOME_BIN"
+            echo "##vso[task.prependpath]$HOME_BIN"
+
+            curl https://storage.googleapis.com/git-repo-downloads/repo > "$REPO_BIN_PATH"
+            chmod a+rx "$REPO_BIN_PATH"
+
+            "$REPO_BIN_PATH" version
+
+      - task: Bash@3
+        displayName: 'Install asdf version manager'
+        inputs:
+          targetType: 'inline'
+          script: |
+            git clone https://github.com/asdf-vm/asdf.git ${{ variables.ASDF_INSTALL_DIR }} --branch v0.14.1
+
+      - task: Bash@3
+        displayName: 'Checkout repository'
+        inputs:
+          targetType: 'inline'
+          script: |
+            git clone https://github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }} --depth 1
+
+      - task: Bash@3
+        displayName: 'Configure dependencies'
+        inputs:
+          targetType: 'inline'
+          script: |
+            git config --global user.name 'azpipelines'
+            git config --global user.email 'job@dev.azure.com'
+            . ${{ variables.ASDF_SCRIPT_FILE }} && make configure
+
+      - task: AzureCLI@2
+        displayName: 'Validate terraform module'
+        inputs:
+          azureSubscription: ${{ parameters.armServiceConnection }}
+          scriptLocation: 'inlineScript'
+          scriptType: 'bash'
+          inlineScript: |
+            . ${{ variables.ASDF_SCRIPT_FILE }} && make tfmodule/init && make check
