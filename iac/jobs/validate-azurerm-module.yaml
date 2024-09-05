@@ -26,6 +26,9 @@ jobs:
       - checkout: self
         persistCredentials: true
 
+      - bash: |
+          ls -la
+
       - task: Bash@3
         displayName: 'Install repo tool'
         inputs:
