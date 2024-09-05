@@ -20,7 +20,8 @@ jobs:
     variables:
       ASDF_INSTALL_DIR: '$HOME/.asdf'
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
-      GITHUB_STATUS_API: 'https://api.github.com/repos/${{ parameters.gitRepo }}/statuses/${{ parameters.gitCommit }}'
+      CURRENT_PROJECT_URL: '$(System.TeamFoundationCollectionUri)$(System.TeamProjectId)'
+      CURRENT_BUILD_URL: '$(CURRENT_PROJECT_URL)/_build/results?buildId=$(Build.BuildId)'
     steps:
       - checkout: none
 
@@ -33,7 +34,7 @@ jobs:
             {
               "state": "pending",
               "description": "Validating terraform module",
-              "target_url": "$(Build.BuildUri)",
+              "target_url": "$(CURRENT_BUILD_URL)",
               "context": "azpipelines/validate-azurerm-module"
             }
 
@@ -110,6 +111,6 @@ jobs:
             {
               "state": "$(GITHUB_COMMIT_STATUS)",
               "description": "$(GITHUB_COMMIT_STATUS_DESC)",
-              "target_url": "$(Build.BuildUri)",
+              "target_url": "$(CURRENT_BUILD_URL)",
               "context": "azpipelines/validate-azurerm-module"
             }
