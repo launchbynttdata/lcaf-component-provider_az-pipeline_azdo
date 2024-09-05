@@ -60,6 +60,7 @@ jobs:
         displayName: 'Configure dependencies'
         inputs:
           targetType: 'inline'
+          workingDirectory: ${{ variables.TF_MODULE_CLONE_DIR }}
           script: |
             git config --global user.name 'azpipelines'
             git config --global user.email 'job@dev.azure.com'
@@ -69,6 +70,7 @@ jobs:
         displayName: 'Validate terraform module'
         inputs:
           azureSubscription: ${{ parameters.armServiceConnection }}
+          workingDirectory: ${{ variables.TF_MODULE_CLONE_DIR }}
           scriptLocation: 'inlineScript'
           scriptType: 'bash'
           inlineScript: |
