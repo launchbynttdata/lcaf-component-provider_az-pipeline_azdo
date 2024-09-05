@@ -33,7 +33,7 @@ jobs:
           statusData: >-
             {
               "state": "pending",
-              "description": "Validating terraform module",
+              "description": "Validate terraform module",
               "target_url": "$(CURRENT_BUILD_URL)",
               "context": "azpipelines/validate-azurerm-module"
             }
@@ -98,10 +98,8 @@ jobs:
           script: |
             if [ "$(Agent.JobStatus)" == "Succeeded"] || [ "$(Agent.JobStatus)" == "SucceededWithIssues" ]; then
               echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS;isOutput=true]success"
-              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS_DESC;isOutput=true]Terraform module validation succeeded"
             else
               echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS;isOutput=true]failure"
-              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS_DESC;isOutput=true]Terraform module validation failed"
             fi
 
       - template: ../steps/post-github-commit-status.yaml
@@ -113,7 +111,7 @@ jobs:
           statusData: >-
             {
               "state": "$(GITHUB_COMMIT_STATUS)",
-              "description": "$(GITHUB_COMMIT_STATUS_DESC)",
+              "description": "Validate terraform module",
               "target_url": "$(CURRENT_BUILD_URL)",
               "context": "azpipelines/validate-azurerm-module"
             }
