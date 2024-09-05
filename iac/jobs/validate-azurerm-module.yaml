@@ -21,7 +21,8 @@ jobs:
       ASDF_INSTALL_DIR: '$HOME/.asdf'
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
     steps:
-      - checkout: none
+      - checkout: self
+        persistCredentials: true
 
       - task: Bash@3
         displayName: 'Install repo tool'
@@ -37,7 +38,7 @@ jobs:
             curl https://storage.googleapis.com/git-repo-downloads/repo > "$REPO_BIN_PATH"
             chmod a+rx "$REPO_BIN_PATH"
 
-            "$REPO_BIN_PATH" version
+            repo version
 
       - task: Bash@3
         displayName: 'Install asdf version manager'
@@ -47,11 +48,12 @@ jobs:
             git clone https://github.com/asdf-vm/asdf.git ${{ variables.ASDF_INSTALL_DIR }} --branch v0.14.1
 
       - task: Bash@3
-        displayName: 'Checkout repository'
+        displayName: 'Checkout terraform module'
         inputs:
           targetType: 'inline'
           script: |
-            git clone https://github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }} --depth 1
+            git clone https://oauth2:$(System.AccessToken)@github.com/${{ parameters.gitRepo }}.git . \
+              --branch ${{ parameters.gitBranch }} --depth 1
 
       - task: Bash@3
         displayName: 'Configure dependencies'
