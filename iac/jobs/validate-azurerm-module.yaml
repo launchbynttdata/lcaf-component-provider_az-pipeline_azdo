@@ -80,6 +80,9 @@ jobs:
 
       - task: AzureCLI@2
         displayName: 'Validate terraform module'
+        env:
+          GO_LINT_TIMEOUT: 10m
+          GO_TEST_TIMEOUT: 45m
         inputs:
           azureSubscription: ${{ parameters.armServiceConnection }}
           workingDirectory: ${{ variables.TF_MODULE_CLONE_DIR }}
