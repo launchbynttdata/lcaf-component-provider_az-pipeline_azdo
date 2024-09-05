@@ -28,6 +28,8 @@ jobs:
 
       - bash: |
           ls -la
+          ls -la .git
+          cat .git/config
 
       - task: Bash@3
         displayName: 'Install repo tool'
