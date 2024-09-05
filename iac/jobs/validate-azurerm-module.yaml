@@ -20,16 +20,8 @@ jobs:
     variables:
       ASDF_INSTALL_DIR: '$HOME/.asdf'
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
-      TF_MODULE_CLONE_DIR: '$(Pipeline.Workspace)/tfmodule'
-      TF_MODULE_CLONE_URL: 'https://oauth2:$(System.AccessToken)@github.com/${{ parameters.gitRepo }}.git'
     steps:
-      - checkout: self
-        persistCredentials: true
-
-      - bash: |
-          ls -la
-          ls -la .git
-          cat .git/config
+      - checkout: none
 
       - task: Bash@3
         displayName: 'Install repo tool'
@@ -59,7 +51,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            git clone ${{ variables.TF_MODULE_CLONE_URL }} ${{ variables.TF_MODULE_CLONE_DIR }} --branch ${{ parameters.gitBranch }}
+            git clone https://$(GITHUB_PAT)@github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }}
 
       - task: Bash@3
         displayName: 'Configure dependencies'
