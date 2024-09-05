@@ -20,8 +20,22 @@ jobs:
     variables:
       ASDF_INSTALL_DIR: '$HOME/.asdf'
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
+      GITHUB_STATUS_API: 'https://api.github.com/repos/${{ parameters.gitRepo }}/statuses/${{ parameters.gitCommit }}'
     steps:
       - checkout: none
+
+      - template: ../steps/post-github-commit-status.yaml
+        parameters:
+          gitRepo: ${{ parameters.gitRepo }}
+          gitCommit: ${{ parameters.gitCommit }}
+          gitHubToken: $(GITHUB_PAT)
+          statusData: >-
+            {
+              "state": "pending",
+              "description": "Validating terraform module",
+              "target_url": "$(Build.BuildUri)",
+              "context": "azpipelines/validate-azurerm-module"
+            }
 
       - task: Bash@3
         displayName: 'Install repo tool'
@@ -72,3 +86,30 @@ jobs:
           scriptType: 'bash'
           inlineScript: |
             . ${{ variables.ASDF_SCRIPT_FILE }} && make tfmodule/init && make check
+
+      - task: Bash@3
+        condition: always()
+        inputs:
+          targetType: 'inline'
+          script: |
+            if [ "$(Agent.JobStatus)" == "Succeeded"] || [ "$(Agent.JobStatus)" == "SucceededWithIssues" ]; then
+              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS;isOutput=true]success"
+              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS_DESC;isOutput=true]Terraform module validation succeeded"
+            else
+              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS;isOutput=true]failure"
+              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS_DESC;isOutput=true]Terraform module validation failed"
+            fi
+
+      - template: ../steps/post-github-commit-status.yaml
+        parameters:
+          gitRepo: ${{ parameters.gitRepo }}
+          gitCommit: ${{ parameters.gitCommit }}
+          gitHubToken: $(GITHUB_PAT)
+          condition: always()
+          statusData: >-
+            {
+              "state": "$(GITHUB_COMMIT_STATUS)",
+              "description": "$(GITHUB_COMMIT_STATUS_DESC)",
+              "target_url": "$(Build.BuildUri)",
+              "context": "azpipelines/validate-azurerm-module"
+            }
