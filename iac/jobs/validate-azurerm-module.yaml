@@ -9,7 +9,7 @@ parameters:
     type: string
   - name: condition
     type: boolean
-    default: true
+    default: string
 
 jobs:
   - job: ValidateAzurermModule
