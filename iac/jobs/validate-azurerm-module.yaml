@@ -7,6 +7,9 @@ parameters:
     type: string
   - name: armServiceConnection
     type: string
+  - name: gitHubToken
+    type: string
+    default: $(GITHUB_PAT)
   - name: condition
     type: string
     default: true
@@ -27,7 +30,7 @@ jobs:
         parameters:
           gitRepo: ${{ parameters.gitRepo }}
           gitCommit: ${{ parameters.gitCommit }}
-          gitHubToken: $(GITHUB_PAT)
+          gitHubToken: ${{ parameters.gitHubToken }}
           statusData: >-
             {
               "state": "pending",
@@ -64,13 +67,12 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            git clone https://$(GITHUB_PAT)@github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }}
+            git clone https://${{ parameters.gitHubToken }}@github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }}
 
       - task: Bash@3
         displayName: 'Configure dependencies'
         inputs:
           targetType: 'inline'
-          workingDirectory: ${{ variables.TF_MODULE_CLONE_DIR }}
           script: |
             git config --global user.name 'azpipelines'
             git config --global user.email 'job@dev.azure.com'
@@ -83,7 +85,6 @@ jobs:
           GO_TEST_TIMEOUT: 45m
         inputs:
           azureSubscription: ${{ parameters.armServiceConnection }}
-          workingDirectory: ${{ variables.TF_MODULE_CLONE_DIR }}
           scriptLocation: 'inlineScript'
           scriptType: 'bash'
           inlineScript: |
@@ -105,7 +106,7 @@ jobs:
         parameters:
           gitRepo: ${{ parameters.gitRepo }}
           gitCommit: ${{ parameters.gitCommit }}
-          gitHubToken: $(GITHUB_PAT)
+          gitHubToken: ${{ parameters.gitHubToken }}
           condition: always()
           statusData: >-
             {
