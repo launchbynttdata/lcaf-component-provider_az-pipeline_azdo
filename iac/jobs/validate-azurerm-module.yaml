@@ -5,8 +5,6 @@ parameters:
     type: string
   - name: gitCommit
     type: string
-  - name: pullRequestId
-    type: string
   - name: armServiceConnection
     type: string
   - name: condition
@@ -89,7 +87,7 @@ jobs:
           scriptLocation: 'inlineScript'
           scriptType: 'bash'
           inlineScript: |
-            . ${{ variables.ASDF_SCRIPT_FILE }} && make tfmodule/init && make check
+            . ${{ variables.ASDF_SCRIPT_FILE }} && make check
 
       - task: Bash@3
         condition: always()
