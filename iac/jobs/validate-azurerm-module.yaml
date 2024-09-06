@@ -46,6 +46,7 @@ jobs:
           displayName: 'Download ${{ file.key }}'
           inputs:
             secureFile: ${{ file.value }}
+            
 
       - ${{ if parameters.gitHubApplication }}:
         - task: UsePythonVersion@0
@@ -68,7 +69,8 @@ jobs:
           inputs:
             targetType: 'inline'
             script: |
-              echo "##vso[task.setvariable variable=GITHUB_TOKEN;issecret=true]$(launch github auth application)"
+              TOKEN=$(launch github auth application)
+              echo "##vso[task.setvariable variable=GITHUB_TOKEN;issecret=true]$TOKEN"
 
 
       - template: ../steps/post-github-commit-status.yaml
