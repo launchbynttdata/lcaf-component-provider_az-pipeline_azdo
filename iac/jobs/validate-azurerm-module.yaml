@@ -48,11 +48,11 @@ jobs:
           name: ${{ file.key }}
           displayName: 'Download ${{ file.key }}'
           inputs:
-            secureFile: ${{ file.secureFile }}
+            secureFile: ${{ file.value }}
 
       - ${{ if parameters.gitHubApplication }}:
         - task: Bash@3
-          displayName: 'Install launch cli'
+          displayName: 'Install Launch CLI'
           inputs:
             targetType: 'inline'
             script: |
