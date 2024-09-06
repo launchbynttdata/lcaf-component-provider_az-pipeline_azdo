@@ -34,10 +34,7 @@ jobs:
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
       CURRENT_PROJECT_URL: '$(System.TeamFoundationCollectionUri)$(System.TeamProjectId)'
       CURRENT_BUILD_URL: '$(CURRENT_PROJECT_URL)/_build/results?buildId=$(Build.BuildId)'
-      # tokens aquired at runtime take precedence over ones supplied by parameter
-      ${{ if parameters.gitHubApplication }}:
-        GITHUB_TOKEN: $(GITHUB_TOKEN)
-      ${{ else }}:
+      ${{ if not(parameters.gitHubApplication) }}:
         GITHUB_TOKEN: ${{ parameters.gitHubToken }}
     steps:
       - checkout: none
