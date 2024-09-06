@@ -56,7 +56,7 @@ jobs:
           inputs:
             targetType: 'inline'
             script: |
-              python3 -m pip install launch-cli==0.10.0
+              python3 -m pip install launch-cli
 
         - task: Bash@3
           displayName: 'Authenticate with GitHub'
