@@ -94,7 +94,8 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            if [ "$(Agent.JobStatus)" == "Succeeded"] || [ "$(Agent.JobStatus)" == "SucceededWithIssues" ]; then
+            echo "$(Agent.JobStatus)"
+            if [ "$(Agent.JobStatus)" = "Succeeded" ] || [ "$(Agent.JobStatus)" = "SucceededWithIssues" ]; then
               echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS]success"
             else
               echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS]failure"
