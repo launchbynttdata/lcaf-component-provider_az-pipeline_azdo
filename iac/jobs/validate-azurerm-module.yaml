@@ -51,12 +51,16 @@ jobs:
             secureFile: ${{ file.value }}
 
       - ${{ if parameters.gitHubApplication }}:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.11'
+
         - task: Bash@3
           displayName: 'Install Launch CLI'
           inputs:
             targetType: 'inline'
             script: |
-              python3 -m pip install launch-cli
+              python3 -m pip install launch-cli==0.10.1
 
         - task: Bash@3
           displayName: 'Authenticate with GitHub'
