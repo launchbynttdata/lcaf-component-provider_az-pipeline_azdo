@@ -97,9 +97,9 @@ jobs:
           targetType: 'inline'
           script: |
             if [ "$(Agent.JobStatus)" == "Succeeded"] || [ "$(Agent.JobStatus)" == "SucceededWithIssues" ]; then
-              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS;isOutput=true]success"
+              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS]success"
             else
-              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS;isOutput=true]failure"
+              echo "##vso[task.setvariable variable=GITHUB_COMMIT_STATUS]failure"
             fi
 
       - template: ../steps/post-github-commit-status.yaml

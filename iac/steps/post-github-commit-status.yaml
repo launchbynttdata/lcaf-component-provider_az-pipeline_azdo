@@ -7,6 +7,9 @@ parameters:
     type: string
   - name: statusData
     type: string
+  - name: gitHubApiVersion
+    type: string
+    default: '2022-11-28'
   - name: condition
     type: string
     default: succeeded()
@@ -21,6 +24,6 @@ steps:
         curl -L -X POST \
           -H "Authorization: Bearer ${{ parameters.gitHubToken }}" \
           -H "Accept: application/vnd.github.v3+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
+          -H "X-GitHub-Api-Version: ${{ parameters.gitHubApiVersion }}" \
           https://api.github.com/repos/${{ parameters.gitRepo }}/statuses/${{ parameters.gitCommit }} \
           -d '${{ parameters.statusData }}'
