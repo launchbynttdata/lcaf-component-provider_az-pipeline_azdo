@@ -8,8 +8,8 @@ parameters:
   - name: armServiceConnection
     type: string
   - name: condition
-    type: boolean
-    default: string
+    type: string
+    default: true
 
 jobs:
   - job: ValidateAzurermModule
