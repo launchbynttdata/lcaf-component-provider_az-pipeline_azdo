@@ -72,8 +72,6 @@ jobs:
               TOKEN=$(launch github auth application | tail -1)
               echo "##vso[task.setvariable variable=GITHUB_TOKEN;issecret=true]$TOKEN"
 
-        - bash: |
-            echo '$(GITHUB_TOKEN)'
 
       - template: ../steps/post-github-commit-status.yaml
         parameters:
