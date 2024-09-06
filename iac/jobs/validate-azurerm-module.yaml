@@ -34,7 +34,7 @@ jobs:
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
       CURRENT_PROJECT_URL: '$(System.TeamFoundationCollectionUri)$(System.TeamProjectId)'
       CURRENT_BUILD_URL: '$(CURRENT_PROJECT_URL)/_build/results?buildId=$(Build.BuildId)'
-      ${{ if not(parameters.gitHubApplication) }}:
+      ${{ if and(not(parameters.gitHubApplication), ne(parameters.gitHubToken, '$(GITHUB_TOKEN)')) }}:
         GITHUB_TOKEN: ${{ parameters.gitHubToken }}
     steps:
       - checkout: none
