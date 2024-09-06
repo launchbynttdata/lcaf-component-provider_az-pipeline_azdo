@@ -1,0 +1,29 @@
+parameters:
+  - name: gitRepo
+    type: string
+  - name: gitCommit
+    type: string
+  - name: gitHubToken
+    type: string
+  - name: statusData
+    type: string
+  - name: gitHubApiVersion
+    type: string
+    default: '2022-11-28'
+  - name: condition
+    type: string
+    default: succeeded()
+
+steps:
+  - task: Bash@3
+    displayName: 'Update commit status'
+    condition: ${{ parameters.condition }}
+    inputs:
+      targetType: 'inline'
+      script: |
+        curl -L -X POST \
+          -H "Authorization: Bearer ${{ parameters.gitHubToken }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "X-GitHub-Api-Version: ${{ parameters.gitHubApiVersion }}" \
+          https://api.github.com/repos/${{ parameters.gitRepo }}/statuses/${{ parameters.gitCommit }} \
+          -d '${{ parameters.statusData }}'
