@@ -7,9 +7,20 @@ parameters:
     type: string
   - name: armServiceConnection
     type: string
+
   - name: gitHubToken
     type: string
-    default: $(GITHUB_PAT)
+    default: $(GITHUB_TOKEN)
+  - name: gitHubApplication
+    type: object
+    default:
+      applicationId: $(GITHUB_APPLICATION_ID)
+      installationId: $(GITHUB_INSTALLATION_ID)
+      signingCertFile: $(GITHUB_SIGNING_CERT_FILE)
+
+  - name: secureFiles
+    type: object
+    default: {}
   - name: condition
     type: string
     default: true
@@ -23,14 +34,50 @@ jobs:
       ASDF_SCRIPT_FILE: '$HOME/.asdf/asdf.sh'
       CURRENT_PROJECT_URL: '$(System.TeamFoundationCollectionUri)$(System.TeamProjectId)'
       CURRENT_BUILD_URL: '$(CURRENT_PROJECT_URL)/_build/results?buildId=$(Build.BuildId)'
+      ${{ if and(not(parameters.gitHubApplication), ne(parameters.gitHubToken, '$(GITHUB_TOKEN)')) }}:
+        GITHUB_TOKEN: ${{ parameters.gitHubToken }}
     steps:
       - checkout: none
+
+      - ${{ each file in parameters.secureFiles }}:
+        - task: DownloadSecureFile@1
+          # secure file is downloaded to $(<name>.secureFilePath)
+          name: ${{ file.key }}
+          displayName: 'Download ${{ file.key }}'
+          inputs:
+            secureFile: ${{ file.value }}
+
+
+      - ${{ if parameters.gitHubApplication }}:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.11'
+
+        - task: Bash@3
+          displayName: 'Install Launch CLI'
+          inputs:
+            targetType: 'inline'
+            script: |
+              python3 -m pip install launch-cli==0.10.1
+
+        - task: Bash@3
+          displayName: 'Authenticate with GitHub'
+          env:
+            GITHUB_APPLIACTION_ID: ${{ parameters.gitHubApplication.applicationId }}
+            GITHUB_INSTALLATION_ID: ${{ parameters.gitHubApplication.installationId }}
+            GITHUB_SIGNING_CERT_FILE: ${{ parameters.gitHubApplication.signingCertFile }}
+          inputs:
+            targetType: 'inline'
+            script: |
+              TOKEN=$(launch github auth application | tail -1)
+              echo "##vso[task.setvariable variable=GITHUB_TOKEN;issecret=true]$TOKEN"
+
 
       - template: ../steps/post-github-commit-status.yaml
         parameters:
           gitRepo: ${{ parameters.gitRepo }}
           gitCommit: ${{ parameters.gitCommit }}
-          gitHubToken: ${{ parameters.gitHubToken }}
+          gitHubToken: $(GITHUB_TOKEN)
           statusData: >-
             {
               "state": "pending",
@@ -67,7 +114,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            git clone https://${{ parameters.gitHubToken }}@github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }}
+            git clone https://oauth2:$(GITHUB_TOKEN)@github.com/${{ parameters.gitRepo }}.git . --branch ${{ parameters.gitBranch }}
 
       - task: Bash@3
         displayName: 'Configure dependencies'
@@ -106,7 +153,7 @@ jobs:
         parameters:
           gitRepo: ${{ parameters.gitRepo }}
           gitCommit: ${{ parameters.gitCommit }}
-          gitHubToken: ${{ parameters.gitHubToken }}
+          gitHubToken: $(GITHUB_TOKEN)
           condition: always()
           statusData: >-
             {
