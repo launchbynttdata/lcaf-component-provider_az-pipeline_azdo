@@ -7,6 +7,7 @@ parameters:
 jobs:
   - job: ManualApproval_${{ parameters.targetEnvironment }}
     displayName: Manual Approval - ${{ parameters.targetEnvironment }}
+    pool: server
     steps:
       - template: ../steps/manual-approval.yaml
         parameters:
