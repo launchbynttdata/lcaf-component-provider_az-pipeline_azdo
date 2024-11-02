@@ -4,7 +4,6 @@ parameters:
 
 steps:
   - task: AzureClI@2
-    name: IntegrationTests_${{ parameters.targetEnvironment }}
     displayName: Integ tests - ${{ parameters.targetEnvironment }}
     inputs:
       scriptType: bash
