@@ -14,7 +14,7 @@ stages:
         parameters:
           vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
           serviceConnection: ${{ parameters.serviceConnection }}
-          targetEnvironment: $(targetEnvironment)
+          targetEnvironment: ${{ parameters.targetEnvironment }}
       - template: ../../common/jobs/manual-approval.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
