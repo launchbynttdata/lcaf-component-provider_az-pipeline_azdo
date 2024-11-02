@@ -16,17 +16,19 @@ parameters:
 steps:
   - template: ../../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
-    displayName: Run Launch Pipeline Terragrunt Apply
+    displayName: Launch Terragrunt Apply
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        echo "dryrun: launch pipeline terragrunt apply"
-        # launch pipeline terragrunt apply \
-        #   --repository-url  ${{ parameters.repositoryUrl }}\
-        #   --git-token ${{ parameters.gitToken }}\
-        #   --commit-sha ${{ parameters.commitSha }}\
-        #   --target-environment ${{ parameters.targetEnvironment }}
+        launch terragrunt \
+          --url ${{ parameters.repositoryUrl }} \
+          --tag ${{ parameters.commitSha }} \
+          --target-environment ${{ parameters.targetEnvironment }} \
+          --platform-resource service \
+          --apply \
+          --generation \
+          --render-app-vars
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true

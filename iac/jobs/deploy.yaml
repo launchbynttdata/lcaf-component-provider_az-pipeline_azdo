@@ -12,7 +12,11 @@ jobs:
     pool:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
-      - template: ../steps/launch_terragrunt_apply.yaml
+      - template: ../steps/launch-terragrunt-apply.yaml
+        parameters:
+          serviceConnection: ${{ parameters.serviceConnection }}
+          targetEnvironment: ${{ parameters.targetEnvironment }}
+      - template: ../steps/integration-tests.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
           targetEnvironment: ${{ parameters.targetEnvironment }}

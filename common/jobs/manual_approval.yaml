@@ -1,0 +1,15 @@
+parameters:
+  - name: vmImageNameMSFTHosted
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: targetEnvironment
+    type: string
+
+jobs:
+  - job: ManualApproval_${{ parameters.targetEnvironment }}
+    displayName: Manual Approval - ${{ parameters.targetEnvironment }}
+    pool:
+      vmImage: ${{ parameters.vmImageNameMSFTHosted }}
+    steps:
+      - template: ../steps/manual_approval.yaml
