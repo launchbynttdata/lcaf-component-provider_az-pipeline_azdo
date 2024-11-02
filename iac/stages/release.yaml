@@ -7,7 +7,7 @@ parameters:
     type: string
 
 stages:
-  - stage: Release
+  - stage: Release - ${{ parameters.targetEnvironment }}
     displayName: Release - ${{ parameters.targetEnvironment }}
     jobs:
       - template: ../jobs/deploy.yaml
