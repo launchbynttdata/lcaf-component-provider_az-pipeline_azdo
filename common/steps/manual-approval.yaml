@@ -20,7 +20,6 @@ parameters:
 steps:
   - task: ManualValidation@0
     displayName: Manual Approval - ${{ parameters.targetEnvironment }}
-    pool: server
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     inputs:
       notifyUsers: ${{ parameters.notifyUsers }}
