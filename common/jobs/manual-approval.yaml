@@ -12,4 +12,4 @@ jobs:
     pool:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
-      - template: ../steps/manual_approval.yaml
+      - template: ../steps/manual-approval.yaml
