@@ -13,3 +13,5 @@ jobs:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
       - template: ../steps/manual-approval.yaml
+        parameters:
+          targetEnvironment: ${{ parameters.targetEnvironment }}
