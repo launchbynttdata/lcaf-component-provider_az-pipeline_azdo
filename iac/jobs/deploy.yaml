@@ -18,5 +18,4 @@ jobs:
           targetEnvironment: ${{ parameters.targetEnvironment }}
       - template: ../steps/integration-tests.yaml
         parameters:
-          serviceConnection: ${{ parameters.serviceConnection }}
           targetEnvironment: ${{ parameters.targetEnvironment }}

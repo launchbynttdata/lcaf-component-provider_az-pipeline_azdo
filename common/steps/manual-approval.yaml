@@ -19,7 +19,7 @@ parameters:
 
 steps:
   - task: ManualValidation@0
-    name: ManualApproval__${{ parameters.targetEnvironment }}
+    name: ManualApproval_${{ parameters.targetEnvironment }}
     displayName: Manual Approval - ${{ parameters.targetEnvironment }}
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     inputs:
