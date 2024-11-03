@@ -5,8 +5,8 @@ parameters:
     type: string
 
 jobs:
-  - job: Deploy
-    displayName: Deploy
+  - job: BuildPush
+    displayName: Build and push
     pool:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
