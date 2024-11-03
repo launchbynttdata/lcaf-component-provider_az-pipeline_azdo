@@ -3,12 +3,10 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
-  - name: targetEnvironment
-    type: string
 
 stages:
-  - stage: Release_${{ parameters.targetEnvironment }}
-    displayName: Release - ${{ parameters.targetEnvironment }}
+  - stage: LaunchServiceBuildPush
+    displayName: Launch Service Build Push
     jobs:
       - template: ../jobs/launch-build-push.yaml
         parameters:
