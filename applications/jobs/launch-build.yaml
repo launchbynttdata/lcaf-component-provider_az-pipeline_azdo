@@ -5,11 +5,11 @@ parameters:
     type: string
 
 jobs:
-  - job: BuildPush
-    displayName: Build and push
+  - job: Build
+    displayName: Build
     pool:
       vmImage: ${{ parameters.vmImageNameMSFTHosted }}
     steps:
-      - template: ../steps/launch-build-push.yaml
+      - template: ../steps/launch-build.yaml
         parameters:
           serviceConnection: ${{ parameters.serviceConnection }}

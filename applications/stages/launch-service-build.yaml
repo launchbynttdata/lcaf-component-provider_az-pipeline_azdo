@@ -5,10 +5,10 @@ parameters:
     type: string
 
 stages:
-  - stage: LaunchServiceBuildPush
-    displayName: Launch Service Build Push
+  - stage: LaunchServiceBuild
+    displayName: Launch Service Build
     jobs:
-      - template: ../jobs/launch-build-push.yaml
+      - template: ../jobs/launch-build.yaml
         parameters:
           vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
           serviceConnection: ${{ parameters.serviceConnection }}

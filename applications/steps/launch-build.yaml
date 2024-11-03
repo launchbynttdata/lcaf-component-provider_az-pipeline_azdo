@@ -5,7 +5,7 @@ parameters:
 steps:
   - template: ../../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
-    displayName: Launch Service Build Push
+    displayName: Launch Service Build
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
@@ -16,6 +16,6 @@ steps:
         echo -e '\n. $HOME/.asdf/asdf.sh' >> ~/.bashrc
         echo '. "$HOME/.asdf/asdf.sh"' >> $BASH_ENV
         source ~/.bashrc
-        launch service build --push
+        launch service build
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
