@@ -10,6 +10,11 @@ steps:
       scriptType: bash
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
-      inlineScript: launch service build --push
+      # remove asdf 
+      inlineScript: |
+        git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.13.1
+        echo -e '\n. $HOME/.asdf/asdf.sh' >> ~/.bashrc
+        source ~/.bashrc
+        launch service build --push
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
