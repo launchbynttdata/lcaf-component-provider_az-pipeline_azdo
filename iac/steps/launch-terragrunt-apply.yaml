@@ -12,7 +12,13 @@ steps:
       scriptType: bash
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
+      # TODO: Remove asdf 
       inlineScript: |
+        git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.13.1
+        echo '. "$HOME/.asdf/asdf.sh"' >> $BASH_ENV
+        echo '. "$HOME/.asdf/completions/asdf.bash"' >> $BASH_ENV
+        source "$HOME/.asdf/asdf.sh"
+        export PATH="$PATH:$HOME/.asdf/bin"
         launch terragrunt \
           --target-environment ${{ parameters.targetEnvironment }} \
           --platform-resource service \
