@@ -16,7 +16,7 @@ steps:
         echo '. "$HOME/.asdf/asdf.sh"' >> $BASH_ENV
         echo '. "$HOME/.asdf/completions/asdf.bash"' >> $BASH_ENV
         source "$HOME/.asdf/asdf.sh"
-        export PATH="$PATH:$HOME/.asdf/bin"
+        export PATH="$PATH:$HOME/.asdf/bin:$HOME/git-repo"
         git clone "https://github.com/launchbynttdata/git-repo.git" "$HOME/git-repo"
         chmod +x "$HOME/git-repo/repo"
         launch service build
