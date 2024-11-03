@@ -1,23 +1,24 @@
 parameters:
   - name: serviceConnection
     type: string
-  - name: targetEnvironment
+  - name: repositoryUrl
     type: string
+    default: ''
+  - name: gitToken
+    type: string
+    default: ''
+  - name: commitSha
+    type: string
+    default: ''
 
 steps:
   - template: ../../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
-    displayName: Launch Terragrunt Apply
+    displayName: Launch Service Build Push
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
-      inlineScript: |
-        launch terragrunt \
-          --target-environment ${{ parameters.targetEnvironment }} \
-          --platform-resource service \
-          --apply \
-          --generation \
-          --render-app-vars
+      inlineScript: launch service build --push
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true

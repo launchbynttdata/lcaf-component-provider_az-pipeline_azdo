@@ -10,12 +10,8 @@ stages:
   - stage: Release_${{ parameters.targetEnvironment }}
     displayName: Release - ${{ parameters.targetEnvironment }}
     jobs:
-      - template: ../jobs/deploy.yaml
+      - template: ../jobs/launch-build-push.yaml
         parameters:
           vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
-          serviceConnection: ${{ parameters.serviceConnection }}
-          targetEnvironment: ${{ parameters.targetEnvironment }}
-      - template: ../../common/jobs/manual-approval.yaml
-        parameters:
           serviceConnection: ${{ parameters.serviceConnection }}
           targetEnvironment: ${{ parameters.targetEnvironment }}
