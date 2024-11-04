@@ -24,7 +24,6 @@ steps:
         launch terragrunt \
           --target-environment ${{ parameters.targetEnvironment }} \
           --platform-resource service \
-          --deployment-region centralus \
           --apply \
           --generation \
           --render-app-vars
