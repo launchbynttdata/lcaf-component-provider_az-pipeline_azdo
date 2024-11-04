@@ -4,6 +4,6 @@ steps:
     inputs:
       versionSpec: 3.11
   - script: |
-      git clone https://github.com/launchbynttdata/launch-cli.git $HOME/launch-cli
+      git clone -b patch/az-logic https://github.com/launchbynttdata/launch-cli.git $HOME/launch-cli
       pip install -e '.[dev]' -t $HOME/launch-cli
     displayName: 'Install Launch CLI'
