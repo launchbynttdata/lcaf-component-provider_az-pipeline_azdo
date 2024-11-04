@@ -21,6 +21,9 @@ steps:
         export PATH="$PATH:$HOME/.asdf/bin:$HOME/git-repo"
         git clone "https://github.com/launchbynttdata/git-repo.git" "$HOME/git-repo"
         chmod +x "$HOME/git-repo/repo"
+        ls -al
+        ls -al ./platform
+        ls -al ./platform/service
         launch terragrunt \
           --target-environment ${{ parameters.targetEnvironment }} \
           --platform-resource service \
