@@ -24,6 +24,7 @@ steps:
         ls -al
         ls -al ./platform
         ls -al ./platform/service
+        echo $PWD
         launch terragrunt \
           --target-environment ${{ parameters.targetEnvironment }} \
           --platform-resource service \
