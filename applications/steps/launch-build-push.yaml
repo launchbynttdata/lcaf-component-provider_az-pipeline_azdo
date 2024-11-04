@@ -19,10 +19,9 @@ steps:
         export PATH="$PATH:$HOME/.asdf/bin:$HOME/git-repo"
         git clone "https://github.com/launchbynttdata/git-repo.git" "$HOME/git-repo"
         chmod +x "$HOME/git-repo/repo"
-        echo "ACR login ${CONTAINER_IMAGE_NAME}"
         az login --service-principal -u $servicePrincipalId -p $servicePrincipalKey --tenant $tenantId
         az account set --subscription $subscriptionId
-        az acr login --name ${CONTAINER_IMAGE_NAME}
+        az acr login --name ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE_NAME}
         launch service build --push
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
