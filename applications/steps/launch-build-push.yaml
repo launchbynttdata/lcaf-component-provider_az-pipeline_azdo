@@ -1,0 +1,24 @@
+parameters:
+  - name: serviceConnection
+    type: string
+
+steps:
+  - template: ../../common/steps/install_launch-cli-branch.yaml
+  - task: AzureClI@2
+    displayName: Launch Service Build and Push
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      # TODO: Remove asdf 
+      inlineScript: |
+        git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.13.1
+        echo '. "$HOME/.asdf/asdf.sh"' >> $BASH_ENV
+        echo '. "$HOME/.asdf/completions/asdf.bash"' >> $BASH_ENV
+        source "$HOME/.asdf/asdf.sh"
+        export PATH="$PATH:$HOME/.asdf/bin:$HOME/git-repo"
+        git clone "https://github.com/launchbynttdata/git-repo.git" "$HOME/git-repo"
+        chmod +x "$HOME/git-repo/repo"
+        launch service build --push
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
