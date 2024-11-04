@@ -3,7 +3,7 @@ parameters:
     type: string
 
 steps:
-  - template: ../../common/steps/install_launch-cli.yaml
+  - template: ../../common/steps/install_launch-cli-branch.yaml
   - task: AzureClI@2
     displayName: Launch Service Build
     inputs:
