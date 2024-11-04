@@ -1,0 +1,9 @@
+steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.11'
+    inputs:
+      versionSpec: 3.11
+  - script: |
+      git clone https://github.com/launchbynttdata/launch-cli.git $HOME/launch-cli
+      pip install -e '.[dev]' -t $HOME/launch-cli
+    displayName: 'Install Launch CLI'
