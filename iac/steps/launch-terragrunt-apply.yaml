@@ -31,6 +31,7 @@ steps:
           --platform-resource service \
           --apply \
           --generation \
-          --render-app-vars
+          --render-app-vars \
+          --dry-run
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true
