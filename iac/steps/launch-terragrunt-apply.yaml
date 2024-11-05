@@ -25,6 +25,7 @@ steps:
         export ARM_CLIENT_SECRET="$servicePrincipalKey"
         export ARM_TENANT_ID="$tenantId"
         export ARM_SUBSCRIPTION_ID=$(az account show | jq -r ".id")
+        echo "Sub = $ARM_SUBSCRIPTION_ID"
         launch terragrunt \
           --target-environment ${{ parameters.targetEnvironment }} \
           --platform-resource service \
