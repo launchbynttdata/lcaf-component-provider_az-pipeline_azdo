@@ -23,5 +23,6 @@ steps:
         az account set --subscription $subscriptionId
         az acr login --name ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE_NAME}
         launch service build --push
+        az logout
       azureSubscription: ${{ parameters.serviceConnection }}
       addSpnToEnvironment: true

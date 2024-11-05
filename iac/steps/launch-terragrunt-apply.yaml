@@ -21,6 +21,7 @@ steps:
         export PATH="$PATH:$HOME/.asdf/bin:$HOME/git-repo"
         git clone "https://github.com/launchbynttdata/git-repo.git" "$HOME/git-repo"
         chmod +x "$HOME/git-repo/repo"
+        az logout
         export ARM_CLIENT_ID="$servicePrincipalId"
         export ARM_CLIENT_SECRET="$servicePrincipalKey"
         export ARM_TENANT_ID="$tenantId"
