@@ -13,6 +13,10 @@ steps:
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
       inlineScript: |
-        launch --version
-        echo "dryrun: launch terragrunt --plan"
+        launch terragrunt \
+          --target-environment ${{ parameters.targetEnvironment }} \
+          --platform-resource service \
+          --plan \
+          --generation \
+          --render-app-vars
       addSpnToEnvironment: true
