@@ -3,6 +3,8 @@ parameters:
     type: string
 
 steps:
+  - template: ../../common/steps/install_asdf.yaml
+  - template: ../../common/steps/install_repo.yaml
   - template: ../../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
     displayName: Launch Service Build and Push

@@ -1,0 +1,12 @@
+steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.11'
+    inputs:
+      versionSpec: 3.11
+  - script: |
+      git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.13.1
+      echo '. "$HOME/.asdf/asdf.sh"' >> $BASH_ENV
+      echo '. "$HOME/.asdf/completions/asdf.bash"' >> $BASH_ENV
+      source "$HOME/.asdf/asdf.sh"
+      export PATH="$PATH:$HOME/.asdf/bin"
+    displayName: 'Install Launch CLI'

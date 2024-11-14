@@ -5,14 +5,15 @@ parameters:
     type: string
 
 steps:
-  - template: ../../common/steps/install_launch-cli-branch.yaml
+  - template: ../../common/steps/install_asdf.yaml
+  - template: ../../common/steps/install_repo.yaml
+  - template: ../../common/steps/install_launch-cli.yaml
   - task: AzureClI@2
     displayName: Launch Terragrunt Apply
     inputs:
       scriptType: bash
       scriptLocation: inlineScript
       workingDirectory: $(System.DefaultWorkingDirectory)
-      # TODO: Remove asdf 
       inlineScript: |
         launch terragrunt \
           --target-environment ${{ parameters.targetEnvironment }} \
