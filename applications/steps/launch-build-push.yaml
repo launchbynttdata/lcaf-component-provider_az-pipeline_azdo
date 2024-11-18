@@ -1,0 +1,21 @@
+parameters:
+  - name: serviceConnection
+    type: string
+
+steps:
+  - template: ../../common/steps/install_asdf.yaml
+  - template: ../../common/steps/install_repo.yaml
+  - template: ../../common/steps/install_launch-cli.yaml
+  - task: AzureClI@2
+    displayName: Launch Service Build and Push
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        az login --service-principal -u $servicePrincipalId -p $servicePrincipalKey --tenant $tenantId
+        az account set --subscription $subscriptionId
+        az acr login --name ${CONTAINER_REGISTRY}/${CONTAINER_IMAGE_NAME}
+        launch service build --push
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true

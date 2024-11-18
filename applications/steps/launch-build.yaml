@@ -1,0 +1,19 @@
+parameters:
+  - name: serviceConnection
+    type: string
+
+steps:
+  - template: ../../common/steps/install_asdf.yaml
+  - template: ../../common/steps/install_repo.yaml
+  - template: ../../common/steps/install_launch-cli.yaml
+  - task: AzureClI@2
+    displayName: Launch Service Build
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        az acr login --name ${CONTAINER_IMAGE_NAME}
+        launch service build
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true

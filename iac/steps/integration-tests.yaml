@@ -1,0 +1,14 @@
+parameters:
+  - name: targetEnvironment
+    type: string
+
+steps:
+  - task: AzureClI@2
+    displayName: Integ tests - ${{ parameters.targetEnvironment }}
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        echo "dryrun: integration tests"
+      addSpnToEnvironment: true

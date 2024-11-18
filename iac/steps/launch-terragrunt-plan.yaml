@@ -1,0 +1,22 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: targetEnvironment
+    type: string
+
+steps:
+  - template: ../../common/steps/install_launch-cli.yaml
+  - task: AzureClI@2
+    displayName: Launch Terragrunt Plan
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        launch terragrunt \
+          --target-environment ${{ parameters.targetEnvironment }} \
+          --platform-resource service \
+          --plan \
+          --generation \
+          --render-app-vars
+      addSpnToEnvironment: true

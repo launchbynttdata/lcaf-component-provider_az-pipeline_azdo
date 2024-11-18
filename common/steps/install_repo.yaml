@@ -1,0 +1,10 @@
+steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.11'
+    inputs:
+      versionSpec: 3.11
+  - script: |
+      git clone "https://github.com/launchbynttdata/git-repo.git" "$HOME/git-repo"
+      chmod +x "$HOME/git-repo/repo"
+      export PATH="$PATH:$HOME/git-repo"
+    displayName: 'Install Launch CLI'

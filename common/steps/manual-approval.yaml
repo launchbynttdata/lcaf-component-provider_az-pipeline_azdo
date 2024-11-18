@@ -1,0 +1,27 @@
+parameters:
+  - name: targetEnvironment
+    type: string
+  - name: notifyUsers
+    type: string
+    default: |
+      test@test.com
+      example@example.com
+  - name: approvalInstructions
+    type: string
+    default: 'Please validate'
+  - name: onTimeout
+    type: string
+    default: 'reject'
+  - name: timeoutInMinutes
+    type: number
+    default: 1440 # task times out in 1 day
+
+
+steps:
+  - task: ManualValidation@0
+    displayName: Manual Approval - ${{ parameters.targetEnvironment }}
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    inputs:
+      notifyUsers: ${{ parameters.notifyUsers }}
+      instructions: ${{ parameters.approvalInstructions }}
+      onTimeout: ${{ parameters.onTimeout }}

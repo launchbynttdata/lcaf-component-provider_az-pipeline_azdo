@@ -1,0 +1,14 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: targetEnvironment
+    type: string
+
+jobs:
+  - job: ManualApproval_${{ parameters.targetEnvironment }}
+    displayName: Manual Approval - ${{ parameters.targetEnvironment }}
+    pool: server
+    steps:
+      - template: ../steps/manual-approval.yaml
+        parameters:
+          targetEnvironment: ${{ parameters.targetEnvironment }}

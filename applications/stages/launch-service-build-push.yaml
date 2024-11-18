@@ -1,0 +1,14 @@
+parameters:
+  - name: vmImageNameMSFTHosted
+    type: string
+  - name: serviceConnection
+    type: string
+
+stages:
+  - stage: LaunchServiceBuildPush
+    displayName: Launch Service Build and Push
+    jobs:
+      - template: ../jobs/launch-build-push.yaml
+        parameters:
+          vmImageNameMSFTHosted: ${{ parameters.vmImageNameMSFTHosted }}
+          serviceConnection: ${{ parameters.serviceConnection }}

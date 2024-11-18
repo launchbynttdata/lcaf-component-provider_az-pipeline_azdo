@@ -1,0 +1,25 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: targetEnvironment
+    type: string
+
+steps:
+  - template: ../../common/steps/install_asdf.yaml
+  - template: ../../common/steps/install_repo.yaml
+  - template: ../../common/steps/install_launch-cli.yaml
+  - task: AzureClI@2
+    displayName: Launch Terragrunt Apply
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      workingDirectory: $(System.DefaultWorkingDirectory)
+      inlineScript: |
+        launch terragrunt \
+          --target-environment ${{ parameters.targetEnvironment }} \
+          --platform-resource service \
+          --apply \
+          --generation \
+          --render-app-vars
+      azureSubscription: ${{ parameters.serviceConnection }}
+      addSpnToEnvironment: true
